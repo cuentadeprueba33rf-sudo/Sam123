@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Note } from "../types";
 
-const API_KEY = process.env.API_KEY || '';
+const API_KEY = 'AIzaSyA-4II5wqBawO8igkH2i5G-WrgNE15-JrI';
 
 // Fallback notes mixed: Secular, Spiritual, and Tough Love
 const FALLBACK_NOTES: Note[] = [
