@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Menu as MenuIcon, Instagram, Heart, RefreshCcw, Copy, Camera, PenTool } from 'lucide-react';
-import { Note, Gender } from './types';
+import { Menu as MenuIcon, Instagram, Heart, RefreshCcw, Copy, Camera, PenTool, Palette } from 'lucide-react';
+import { Note, Gender, NoteStyle } from './types';
 import { generateDailyNote } from './services/geminiService';
 import NoteCard from './components/NoteCard';
 import Menu from './components/Menu';
@@ -93,6 +93,19 @@ const App: React.FC = () => {
     }
   };
 
+  // Cycle through visual styles without changing text
+  const handleCycleStyle = () => {
+    if (!currentNote) return;
+    const styles: NoteStyle[] = ['classic', 'midnight', 'aura', 'minimal'];
+    const currentIndex = styles.indexOf(currentNote.style || 'classic');
+    const nextIndex = (currentIndex + 1) % styles.length;
+    
+    setCurrentNote({
+      ...currentNote,
+      style: styles[nextIndex]
+    });
+  };
+
   const handleCopyText = () => {
     if (!currentNote) return;
     const text = `"${currentNote.content}" — ${currentNote.author}`;
@@ -115,7 +128,7 @@ const App: React.FC = () => {
         // 1. Generate Image from DOM
         const canvas = await window.html2canvas(element, {
           scale: 3, // High resolution
-          backgroundColor: '#ffffff', // Force white background
+          backgroundColor: null, // Transparent to respect styles
           logging: false,
           useCORS: true, // To handle external images
           allowTaint: true,
@@ -165,8 +178,12 @@ const App: React.FC = () => {
 
   return (
     <div 
-      className={`min-h-screen w-full relative flex flex-col items-center justify-center transition-colors duration-500 ${screenshotMode ? 'bg-paper cursor-zoom-out' : ''}`}
+      className={`min-h-screen w-full relative flex flex-col items-center justify-center transition-colors duration-500 ${screenshotMode ? 'bg-stone-100 cursor-zoom-out' : ''}`}
       onClick={() => setScreenshotMode(false)}
+      style={{
+        backgroundColor: currentNote?.style === 'midnight' ? '#0f1115' : '#F0EFEB',
+        transition: 'background-color 0.5s ease'
+      }}
     >
       {/* Onboarding Overlay */}
       {showOnboarding && <Onboarding onComplete={handleGenderSelect} />}
@@ -181,14 +198,14 @@ const App: React.FC = () => {
       {/* Header / Nav - Hidden in Screenshot Mode */}
       <nav className={`fixed top-0 w-full p-6 flex justify-between items-center z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 -translate-y-10 pointer-events-none' : 'opacity-100'}`}>
         <div className="flex items-center gap-2">
-           <div className="w-2 h-2 bg-ink rounded-full animate-pulse"></div>
-           <span className="font-serif italic text-ink text-lg">Notas del Alma</span>
+           <div className={`w-2 h-2 rounded-full animate-pulse ${currentNote?.style === 'midnight' ? 'bg-white' : 'bg-ink'}`}></div>
+           <span className={`font-serif italic text-lg ${currentNote?.style === 'midnight' ? 'text-white' : 'text-ink'}`}>Notas del Alma</span>
         </div>
         <button 
           onClick={(e) => { e.stopPropagation(); setIsMenuOpen(true); }}
-          className="p-2 hover:bg-white/50 rounded-full transition-colors"
+          className={`p-2 rounded-full transition-colors ${currentNote?.style === 'midnight' ? 'hover:bg-white/10 text-white' : 'hover:bg-white/50 text-ink'}`}
         >
-          <MenuIcon className="w-6 h-6 text-ink" />
+          <MenuIcon className="w-6 h-6" />
         </button>
       </nav>
 
@@ -196,8 +213,8 @@ const App: React.FC = () => {
       <main className={`w-full max-w-xl px-4 transition-all duration-500 ${screenshotMode ? 'scale-105' : 'scale-100'}`}>
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-96">
-            <div className="w-12 h-12 border-4 border-stone-200 border-t-ink rounded-full animate-spin mb-4"></div>
-            <p className="font-serif text-stone-400 animate-pulse">Sintonizando vibra...</p>
+            <div className={`w-12 h-12 border-4 border-t-current rounded-full animate-spin mb-4 ${currentNote?.style === 'midnight' ? 'border-stone-700 text-white' : 'border-stone-200 text-ink'}`}></div>
+            <p className={`font-serif animate-pulse ${currentNote?.style === 'midnight' ? 'text-stone-400' : 'text-stone-400'}`}>Sintonizando vibra...</p>
           </div>
         ) : (
           currentNote && <NoteCard note={currentNote} viewMode={screenshotMode || isGeneratingImage} />
@@ -256,6 +273,14 @@ const App: React.FC = () => {
 
       {/* Secondary Tools (Copy & Create) */}
       <div className={`fixed right-6 bottom-32 flex flex-col gap-4 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100'}`}>
+         <button 
+           onClick={(e) => { e.stopPropagation(); handleCycleStyle(); }}
+           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all group"
+           title="Cambiar Estilo Visual"
+         >
+            <Palette className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+         </button>
+
          <button 
            onClick={(e) => { e.stopPropagation(); setIsCreateModalOpen(true); }}
            className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all"

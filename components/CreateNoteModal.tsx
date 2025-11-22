@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Check } from 'lucide-react';
-import { Note } from '../types';
+import { Note, NoteStyle } from '../types';
 
 interface CreateNoteModalProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ isOpen, onClose, onCr
   const [content, setContent] = useState('');
   const [author, setAuthor] = useState('');
   const [theme, setTheme] = useState<'hope' | 'courage' | 'love' | 'peace'>('hope');
+  const [style, setStyle] = useState<NoteStyle>('classic');
 
   if (!isOpen) return null;
 
@@ -24,6 +25,7 @@ const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ isOpen, onClose, onCr
       content: content.trim(),
       author: author.trim() || "Yo mism@",
       theme,
+      style,
       timestamp: Date.now()
     };
 
@@ -33,6 +35,7 @@ const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ isOpen, onClose, onCr
     setContent('');
     setAuthor('');
     setTheme('hope');
+    setStyle('classic');
   };
 
   return (
@@ -44,7 +47,7 @@ const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ isOpen, onClose, onCr
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-paper rounded-2xl shadow-2xl p-6 md:p-8 animate-fade-in">
+      <div className="relative w-full max-w-md bg-paper rounded-2xl shadow-2xl p-6 md:p-8 animate-fade-in max-h-[90vh] overflow-y-auto hide-scrollbar">
         <button 
           onClick={onClose}
           className="absolute right-4 top-4 p-2 text-stone-400 hover:text-ink transition-colors"
@@ -64,7 +67,7 @@ const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ isOpen, onClose, onCr
               onChange={(e) => setContent(e.target.value)}
               maxLength={120}
               placeholder="Escribe algo hermoso hoy..."
-              className="w-full p-4 bg-white border border-stone-200 rounded-xl font-serif text-lg text-ink focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/50 resize-none h-32 placeholder:text-stone-300"
+              className="w-full p-4 bg-white border border-stone-200 rounded-xl font-serif text-lg text-ink focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/50 resize-none h-24 placeholder:text-stone-300"
             />
             <div className="text-right text-xs text-stone-300 mt-1">{content.length}/120</div>
           </div>
@@ -83,9 +86,33 @@ const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ isOpen, onClose, onCr
             />
           </div>
 
+          {/* Style Selector */}
           <div>
             <label className="block font-sans text-xs uppercase tracking-wider text-stone-500 mb-3">
-              Vibra de la nota
+              Estilo Visual
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { id: 'classic', label: 'Clásico', bg: 'bg-[#FDFBF7] border-stone-300' },
+                { id: 'midnight', label: 'Noche', bg: 'bg-slate-800 text-white border-slate-600' },
+                { id: 'aura', label: 'Aura', bg: 'bg-gradient-to-br from-purple-100 to-blue-100 border-purple-200' },
+                { id: 'minimal', label: 'Minimal', bg: 'bg-gray-100 border-gray-200 font-bold' },
+              ].map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setStyle(s.id as NoteStyle)}
+                  className={`h-16 rounded-lg border flex items-center justify-center transition-all ${s.bg} ${style === s.id ? 'ring-2 ring-offset-1 ring-ink' : 'opacity-70 hover:opacity-100'}`}
+                >
+                   <span className="text-[10px] font-sans uppercase">{s.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-sans text-xs uppercase tracking-wider text-stone-500 mb-3">
+              Vibra (Color)
             </label>
             <div className="flex justify-between gap-2">
               {[
