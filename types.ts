@@ -1,3 +1,5 @@
+export type Gender = 'female' | 'male' | 'neutral';
+
 export interface Note {
   id: string;
   content: string;
@@ -7,6 +9,6 @@ export interface Note {
 }
 
 export interface UserSettings {
-  name: string;
+  gender: Gender | null;
   hasOnboarded: boolean;
 }

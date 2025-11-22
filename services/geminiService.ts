@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Note } from "../types";
+import { Note, Gender } from "../types";
 
 const API_KEY = 'AIzaSyA-4II5wqBawO8igkH2i5G-WrgNE15-JrI';
 
@@ -44,17 +44,30 @@ const FALLBACK_NOTES: Note[] = [
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
-export const generateDailyNote = async (userName: string = ''): Promise<Note> => {
+export const generateDailyNote = async (gender: Gender = 'female'): Promise<Note> => {
   if (!API_KEY) {
     console.warn("API Key not found, returning fallback note.");
     return FALLBACK_NOTES[Math.floor(Math.random() * FALLBACK_NOTES.length)];
   }
 
   try {
+    // Define gender context for the prompt
+    let genderContext = "";
+    if (gender === 'female') {
+      genderContext = "La usuaria es MUJER. Usa adjetivos femeninos (ej: valiosa, segura, amada, cansada).";
+    } else if (gender === 'male') {
+      genderContext = "El usuario es HOMBRE. Usa adjetivos masculinos (ej: valioso, seguro, amado, cansado).";
+    } else {
+      genderContext = "El usuario prefiere lenguaje NEUTRO o inclusivo indirecto (evita marcas de género fuertes si es posible, o usa masculino genérico suave).";
+    }
+
     // Updated prompt to ensure variety (not just religious)
     const prompt = `
       Actúa como una mejor amiga sabia, 'aesthetic' y directa (tipo "sister" o consejera).
       
+      CONTEXTO DEL USUARIO: ${genderContext}
+      IMPORTANTE: Asegúrate de que la gramática coincida con el género especificado.
+
       TU OBJETIVO: Generar una frase corta, impactante y sanadora para una nota visual.
 
       REGLAS DE BALANCE (IMPORTANTE):
@@ -65,7 +78,7 @@ export const generateDailyNote = async (userName: string = ''): Promise<Note> =>
 
       ESTILO DE ESCRITURA:
       - CERO palabras rebuscadas o filosóficas. Habla claro y al corazón.
-      - Tono: "Amiga date cuenta", cálido pero firme.
+      - Tono: "Amiga date cuenta" (o amigo date cuenta), cálido pero firme.
       
       EJEMPLOS DE LA VIBRA QUE BUSCO (MEZCLADOS):
       - "No elijas a cualquiera, elige a esa persona que ore por ti." (Espiritual)
@@ -81,7 +94,7 @@ export const generateDailyNote = async (userName: string = ''): Promise<Note> =>
       model: "gemini-2.5-flash",
       contents: prompt,
       config: {
-        systemInstruction: "Eres una voz femenina, moderna y estética. Alternas entre consejos terrenales y espirituales.",
+        systemInstruction: "Eres una voz moderna y estética. Alternas entre consejos terrenales y espirituales. Eres estricta con el género gramatical del usuario.",
         temperature: 1.2, // High temperature for more variety
         responseMimeType: "application/json",
         responseSchema: {

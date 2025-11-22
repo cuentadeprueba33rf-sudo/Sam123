@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Heart, Clock, Sparkles } from 'lucide-react';
+import { X, Heart, Clock, Sparkles, PenTool } from 'lucide-react';
 import { Note } from '../types';
 
 interface MenuProps {
@@ -8,9 +8,10 @@ interface MenuProps {
   savedNotes: Note[];
   onSelectNote: (note: Note) => void;
   onGenerateNew: () => void;
+  onCreateOwn: () => void;
 }
 
-const Menu: React.FC<MenuProps> = ({ isOpen, onClose, savedNotes, onSelectNote, onGenerateNew }) => {
+const Menu: React.FC<MenuProps> = ({ isOpen, onClose, savedNotes, onSelectNote, onGenerateNew, onCreateOwn }) => {
   return (
     <>
       {/* Backdrop */}
@@ -29,16 +30,27 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose, savedNotes, onSelectNote, 
             </button>
           </div>
 
-          <div className="mb-6">
+          <div className="mb-6 space-y-3">
             <button 
               onClick={() => {
                 onGenerateNew();
                 onClose();
               }}
-              className="w-full flex items-center justify-center gap-2 bg-ink text-paper py-3 rounded-lg font-sans text-sm uppercase tracking-widest hover:bg-ink/90 transition-all active:scale-95"
+              className="w-full flex items-center justify-center gap-2 bg-ink text-paper py-3 rounded-lg font-sans text-xs uppercase tracking-widest hover:bg-ink/90 transition-all active:scale-95"
             >
               <Sparkles className="w-4 h-4" />
-              Nueva Nota
+              Pedir al Universo
+            </button>
+            
+            <button 
+              onClick={() => {
+                onCreateOwn();
+                onClose();
+              }}
+              className="w-full flex items-center justify-center gap-2 bg-white border border-stone-200 text-ink py-3 rounded-lg font-sans text-xs uppercase tracking-widest hover:bg-stone-50 transition-all active:scale-95"
+            >
+              <PenTool className="w-4 h-4" />
+              Escribir mi nota
             </button>
           </div>
 

@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Menu as MenuIcon, Share2, Camera, Heart, RefreshCcw, Instagram, Copy } from 'lucide-react';
-import { Note } from './types';
+import React, { useState, useEffect } from 'react';
+import { Menu as MenuIcon, Instagram, Heart, RefreshCcw, Copy, Camera, PenTool } from 'lucide-react';
+import { Note, Gender } from './types';
 import { generateDailyNote } from './services/geminiService';
 import NoteCard from './components/NoteCard';
 import Menu from './components/Menu';
+import Onboarding from './components/Onboarding';
+import CreateNoteModal from './components/CreateNoteModal';
 
 // Declare html2canvas globally since it's loaded via CDN
 declare global {
@@ -20,22 +22,69 @@ const App: React.FC = () => {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [screenshotMode, setScreenshotMode] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  
+  // New states for Gender & Custom Notes
+  const [gender, setGender] = useState<Gender | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Initial Load
   useEffect(() => {
     const loadInitialData = async () => {
-      const note = await generateDailyNote();
-      setCurrentNote(note);
-      setIsLoading(false);
+      // 1. Check Local Storage for gender
+      const savedGender = localStorage.getItem('user_gender') as Gender | null;
+      
+      if (savedGender) {
+        setGender(savedGender);
+        // Generate first note with saved gender
+        const note = await generateDailyNote(savedGender);
+        setCurrentNote(note);
+        setIsLoading(false);
+      } else {
+        // Show onboarding if no gender saved
+        setShowOnboarding(true);
+        setIsLoading(false);
+      }
+
+      // Load saved notes
+      const localNotes = localStorage.getItem('saved_notes');
+      if (localNotes) {
+        try {
+          setSavedNotes(JSON.parse(localNotes));
+        } catch (e) {
+          console.error("Error parsing saved notes", e);
+        }
+      }
     };
     loadInitialData();
   }, []);
 
-  const handleNewNote = async () => {
+  // Save favorite notes to local storage
+  useEffect(() => {
+    localStorage.setItem('saved_notes', JSON.stringify(savedNotes));
+  }, [savedNotes]);
+
+  const handleGenderSelect = async (selectedGender: Gender) => {
+    localStorage.setItem('user_gender', selectedGender);
+    setGender(selectedGender);
+    setShowOnboarding(false);
     setIsLoading(true);
-    const note = await generateDailyNote();
+    // Generate first note immediately after selection
+    const note = await generateDailyNote(selectedGender);
     setCurrentNote(note);
     setIsLoading(false);
+  };
+
+  const handleNewNote = async () => {
+    if (!gender) return;
+    setIsLoading(true);
+    const note = await generateDailyNote(gender);
+    setCurrentNote(note);
+    setIsLoading(false);
+  };
+
+  const handleCreateOwnNote = (note: Note) => {
+    setCurrentNote(note);
   };
 
   const handleSaveNote = () => {
@@ -70,10 +119,6 @@ const App: React.FC = () => {
           logging: false,
           useCORS: true, // To handle external images
           allowTaint: true,
-          onclone: (clonedDoc: Document) => {
-            // Optional: Manipulate the cloned DOM if needed before capture
-            // e.g. const el = clonedDoc.getElementById('note-card-capture');
-          }
         });
 
         // 2. Convert to Blob
@@ -91,7 +136,6 @@ const App: React.FC = () => {
             try {
               await navigator.share({
                 files: [file],
-                // title and text are often ignored by Instagram when sharing files, but good to have
                 title: 'Nota del Alma', 
                 text: '✨'
               });
@@ -124,6 +168,16 @@ const App: React.FC = () => {
       className={`min-h-screen w-full relative flex flex-col items-center justify-center transition-colors duration-500 ${screenshotMode ? 'bg-paper cursor-zoom-out' : ''}`}
       onClick={() => setScreenshotMode(false)}
     >
+      {/* Onboarding Overlay */}
+      {showOnboarding && <Onboarding onComplete={handleGenderSelect} />}
+
+      {/* Create Note Modal */}
+      <CreateNoteModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+        onCreate={handleCreateOwnNote} 
+      />
+
       {/* Header / Nav - Hidden in Screenshot Mode */}
       <nav className={`fixed top-0 w-full p-6 flex justify-between items-center z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 -translate-y-10 pointer-events-none' : 'opacity-100'}`}>
         <div className="flex items-center gap-2">
@@ -143,7 +197,7 @@ const App: React.FC = () => {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-96">
             <div className="w-12 h-12 border-4 border-stone-200 border-t-ink rounded-full animate-spin mb-4"></div>
-            <p className="font-serif text-stone-400 animate-pulse">Consultando al universo...</p>
+            <p className="font-serif text-stone-400 animate-pulse">Sintonizando vibra...</p>
           </div>
         ) : (
           currentNote && <NoteCard note={currentNote} viewMode={screenshotMode || isGeneratingImage} />
@@ -155,7 +209,7 @@ const App: React.FC = () => {
         <div className="fixed inset-0 bg-ink/50 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4 animate-fade-in">
             <div className="w-8 h-8 border-4 border-stone-200 border-t-ink rounded-full animate-spin"></div>
-            <p className="font-sans text-sm text-ink font-medium">Creando imagen mágica...</p>
+            <p className="font-sans text-sm text-ink font-medium">Preparando tu historia...</p>
           </div>
         </div>
       )}
@@ -173,7 +227,7 @@ const App: React.FC = () => {
         <button 
           onClick={(e) => { e.stopPropagation(); handleNewNote(); }}
           className="group p-4 bg-white shadow-lg rounded-full hover:bg-stone-50 transition-all active:scale-95"
-          title="Nueva Nota"
+          title="Nueva Nota del Universo"
         >
           <RefreshCcw className="w-6 h-6 text-ink group-hover:rotate-180 transition-transform duration-500" />
         </button>
@@ -200,8 +254,15 @@ const App: React.FC = () => {
 
       </div>
 
-      {/* Secondary Tools (Copy) */}
+      {/* Secondary Tools (Copy & Create) */}
       <div className={`fixed right-6 bottom-32 flex flex-col gap-4 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100'}`}>
+         <button 
+           onClick={(e) => { e.stopPropagation(); setIsCreateModalOpen(true); }}
+           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all"
+           title="Escribir mi nota"
+         >
+            <PenTool className="w-5 h-5" />
+         </button>
          <button 
            onClick={(e) => { e.stopPropagation(); handleCopyText(); }}
            className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all"
@@ -225,6 +286,7 @@ const App: React.FC = () => {
         savedNotes={savedNotes}
         onSelectNote={setCurrentNote}
         onGenerateNew={handleNewNote}
+        onCreateOwn={() => setIsCreateModalOpen(true)}
       />
 
     </div>
