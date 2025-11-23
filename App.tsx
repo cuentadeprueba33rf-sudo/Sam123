@@ -84,6 +84,7 @@ const App: React.FC = () => {
   
   // New states for Gender, Mood, Custom Notes & Background
   const [gender, setGender] = useState<Gender | null>(null);
+  const [currentMood, setCurrentMood] = useState<Mood>('neutral'); // Store current mood
   const [appBackground, setAppBackground] = useState<AppBackground>('auto');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -107,10 +108,14 @@ const App: React.FC = () => {
       // 1. Check Local Storage for gender
       const savedGender = localStorage.getItem('user_gender') as Gender | null;
       
+      // Load saved mood if exists
+      const savedMood = localStorage.getItem('user_mood') as Mood | null;
+      if (savedMood) setCurrentMood(savedMood);
+
       if (savedGender) {
         setGender(savedGender);
-        // Generate first note with default mood
-        const note = await generateDailyNote(savedGender, 'neutral');
+        // Generate first note with saved or default mood
+        const note = await generateDailyNote(savedGender, savedMood || 'neutral');
         setCurrentNote(note);
         setIsLoading(false);
       } else {
@@ -149,7 +154,7 @@ const App: React.FC = () => {
     setShowOnboarding(false);
     setIsLoading(true);
     // Generate first note
-    const note = await generateDailyNote(selectedGender, 'neutral');
+    const note = await generateDailyNote(selectedGender, currentMood);
     setCurrentNote(note);
     setIsLoading(false);
   };
@@ -160,10 +165,21 @@ const App: React.FC = () => {
   };
 
   const handleMoodSelect = async (mood: Mood) => {
+    setCurrentMood(mood);
+    localStorage.setItem('user_mood', mood); // Remember mood
     setShowMoodSelector(false);
+    
     if (!gender) return;
     setIsLoading(true);
     const note = await generateDailyNote(gender, mood);
+    setCurrentNote(note);
+    setIsLoading(false);
+  };
+
+  const handleGenerateNew = async () => {
+    if (!gender) return;
+    setIsLoading(true);
+    const note = await generateDailyNote(gender, currentMood);
     setCurrentNote(note);
     setIsLoading(false);
   };
@@ -457,15 +473,25 @@ const App: React.FC = () => {
       {/* Controls - Optimized for Mobile (Bottom Bar) */}
       <div className={`fixed bottom-0 w-full p-4 md:p-8 md:pb-12 flex justify-center items-end gap-4 md:gap-6 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-y-20 pointer-events-none' : 'opacity-100'}`}>
         
+        {/* 1. Change Mood Button */}
         <button 
           onClick={(e) => { e.stopPropagation(); setShowMoodSelector(true); }}
           className={`group p-3 md:p-4 bg-white shadow-lg rounded-full transition-all active:scale-95 ${uiBgHover}`}
-          title="Sintonizar Emoción"
+          title="Cambiar estado de ánimo"
         >
-          <Brain className="w-5 h-5 md:w-6 md:h-6 text-ink group-hover:text-purple-600 transition-colors" />
+          <Brain className="w-5 h-5 md:w-6 md:h-6 text-stone-400 group-hover:text-purple-600 transition-colors" />
         </button>
 
-        {/* Instagram Share Button */}
+        {/* 2. MAIN GENERATE BUTTON (Use Current Mood) */}
+        <button 
+          onClick={(e) => { e.stopPropagation(); handleGenerateNew(); }}
+          className={`group p-4 md:p-5 bg-white shadow-xl rounded-full transition-all active:scale-95 ${uiBgHover} ring-1 ring-stone-100`}
+          title="Nueva Nota (Mismo Mood)"
+        >
+          <Sparkles className="w-6 h-6 md:w-7 md:h-7 text-ink group-hover:text-gold transition-colors" />
+        </button>
+
+        {/* 3. Instagram Share Button */}
         <button 
           onClick={(e) => { e.stopPropagation(); handleInstagramShare(); }}
           className="group relative p-5 md:p-6 bg-gradient-to-tr from-purple-600 via-pink-600 to-orange-500 text-white shadow-xl rounded-full hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center mb-2 md:mb-0"
@@ -482,7 +508,7 @@ const App: React.FC = () => {
           className={`group p-3 md:p-4 bg-white shadow-lg rounded-full transition-all active:scale-95 ${uiBgHover}`}
           title="Guardar en favoritos"
         >
-          <Heart className={`w-5 h-5 md:w-6 md:h-6 transition-colors ${isSaved ? 'fill-rose-400 text-rose-400' : 'text-ink'}`} />
+          <Heart className={`w-5 h-5 md:w-6 md:h-6 transition-colors ${isSaved ? 'fill-rose-400 text-rose-400' : 'text-stone-400 hover:text-rose-400'}`} />
         </button>
 
       </div>

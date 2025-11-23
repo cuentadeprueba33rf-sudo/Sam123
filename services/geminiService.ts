@@ -3,56 +3,52 @@ import { Note, Gender, NoteStyle, Mood, ExtractionResult } from "../types";
 
 const API_KEY = 'AIzaSyBHdYTVWfwOc1gTn4y4SVYfnE54RBSWEN0';
 
-// Fallback notes mixed: Secular, Spiritual, and Tough Love
+// Expanded Fallback notes to prevent repetition if API fails
 const FALLBACK_NOTES: Note[] = [
-  {
-    id: 'fallback-1',
-    content: "Recuerda que el mundo gira alrededor del sol y de su propio eje, no alrededor de las opiniones de ellos.",
-    author: "Recordatorio",
-    theme: 'courage',
-    style: 'classic',
-    timestamp: Date.now()
-  },
-  {
-    id: 'fallback-2',
-    content: "No elijas a cualquiera, elige a quien esté dispuesto a doblar rodillas ante Dios por ti.",
-    author: "Estándares",
-    theme: 'love',
-    style: 'classic',
-    timestamp: Date.now()
-  },
-  {
-    id: 'fallback-3',
-    content: "Esa tormenta ya pasó. Deja de llover sobre mojado en tu mente.",
-    author: "Paz Mental",
-    theme: 'peace',
-    style: 'classic',
-    timestamp: Date.now()
-  },
-  {
-    id: 'fallback-4',
-    content: "Eres el sol, deja de rogarle a una vela que te ilumine.",
-    author: "Amor Propio",
-    theme: 'hope',
-    style: 'classic',
-    timestamp: Date.now()
-  },
-  {
-    id: 'fallback-5',
-    content: "Si te costó tu paz mental, entonces te salió demasiado caro.",
-    author: "Consejo",
-    theme: 'courage',
-    style: 'classic',
-    timestamp: Date.now()
-  }
+  { id: 'f1', content: "Recuerda que el mundo gira alrededor del sol y de su propio eje, no alrededor de las opiniones de ellos.", author: "Física Simple", theme: 'courage', style: 'midnight', timestamp: Date.now() },
+  { id: 'f2', content: "No elijas a cualquiera, elige a quien esté dispuesto a doblar rodillas ante Dios por ti.", author: "Estándares", theme: 'love', style: 'vintage', timestamp: Date.now() },
+  { id: 'f3', content: "Esa tormenta ya pasó. Deja de llover sobre mojado en tu mente.", author: "Paz Mental", theme: 'peace', style: 'botanical', timestamp: Date.now() },
+  { id: 'f4', content: "Eres el sol, deja de rogarle a una vela que te ilumine.", author: "Amor Propio", theme: 'hope', style: 'aura', timestamp: Date.now() },
+  { id: 'f5', content: "Si te costó tu paz mental, entonces te salió demasiado caro.", author: "Consejo", theme: 'courage', style: 'minimal', timestamp: Date.now() },
+  { id: 'f6', content: "No dejes que los comentarios de otros te hagan daño, ellos no conocen tu historia con Dios.", author: "Protección", theme: 'courage', style: 'classic', timestamp: Date.now() },
+  { id: 'f7', content: "Pon tu mente donde la tormenta ya acabó, aunque siga lloviendo afuera.", author: "Fe", theme: 'hope', style: 'cinema', timestamp: Date.now() },
+  { id: 'f8', content: "No eres lo que te pasó, eres quien decides ser ahora.", author: "Renacer", theme: 'hope', style: 'rose', timestamp: Date.now() },
+  { id: 'f9', content: "A veces Dios te quita el sueño para que despiertes.", author: "Señales", theme: 'peace', style: 'midnight', timestamp: Date.now() },
+  { id: 'f10', content: "Tu valor no disminuye por la incapacidad de alguien de verlo.", author: "Verdad", theme: 'love', style: 'classic', timestamp: Date.now() },
+  { id: 'f11', content: "El brillo que molesta a los demás es la luz que necesitas para tu camino.", author: "Luz Propia", theme: 'courage', style: 'aura', timestamp: Date.now() },
+  { id: 'f12', content: "No es soledad, es una cita contigo misma para reordenar el alma.", author: "Tiempo a solas", theme: 'peace', style: 'botanical', timestamp: Date.now() },
+  { id: 'f13', content: "Lo que es para ti, te encontrará incluso si te escondes.", author: "Destino", theme: 'hope', style: 'vintage', timestamp: Date.now() },
+  { id: 'f14', content: "Perdonar es liberar a un prisionero y descubrir que el prisionero eras tú.", author: "Libertad", theme: 'peace', style: 'minimal', timestamp: Date.now() },
+  { id: 'f15', content: "Sé la mujer que necesitabas cuando eras niña.", author: "Crecimiento", theme: 'love', style: 'rose', timestamp: Date.now() },
+  { id: 'f16', content: "Dios no te da la carga que pides, te da la espalda para cargarla.", author: "Fortaleza", theme: 'courage', style: 'cinema', timestamp: Date.now() },
+  { id: 'f17', content: "Deja de mirar el reloj, Dios tiene su propio tiempo.", author: "Paciencia", theme: 'hope', style: 'midnight', timestamp: Date.now() },
+  { id: 'f18', content: "Tu corazón es un jardín, deja de dejar entrar a gente que no riega las flores.", author: "Cuidado", theme: 'love', style: 'botanical', timestamp: Date.now() },
+  { id: 'f19', content: "No bajes la meta, aumenta el esfuerzo.", author: "Disciplina", theme: 'courage', style: 'minimal', timestamp: Date.now() },
+  { id: 'f20', content: "Respira. Es solo un mal día, no una mala vida.", author: "Perspectiva", theme: 'peace', style: 'aura', timestamp: Date.now() },
+  { id: 'f21', content: "Nadie es como tú, y ese es tu poder.", author: "Autenticidad", theme: 'love', style: 'classic', timestamp: Date.now() },
+  { id: 'f22', content: "Agradece incluso por las puertas que se cerraron.", author: "Gratitud", theme: 'hope', style: 'vintage', timestamp: Date.now() },
+  { id: 'f23', content: "Florece donde te planten, pero si la tierra es mala, muévete.", author: "Cambio", theme: 'courage', style: 'botanical', timestamp: Date.now() },
+  { id: 'f24', content: "Tu paz es el nuevo éxito.", author: "Prioridades", theme: 'peace', style: 'minimal', timestamp: Date.now() },
+  { id: 'f25', content: "Si no suma, que no reste. Y si resta, que se vaya.", author: "Matemáticas de Vida", theme: 'courage', style: 'rose', timestamp: Date.now() },
+  { id: 'f26', content: "Dios convierte las crisis en clases.", author: "Aprendizaje", theme: 'hope', style: 'classic', timestamp: Date.now() },
+  { id: 'f27', content: "La intuición es el GPS del alma, no la silencies.", author: "Escúchate", theme: 'peace', style: 'midnight', timestamp: Date.now() },
+  { id: 'f28', content: "Que tus sueños sean más grandes que tus miedos.", author: "Valentía", theme: 'courage', style: 'aura', timestamp: Date.now() },
+  { id: 'f29', content: "No necesitas brillar para nadie más que para ti.", author: "Esencia", theme: 'love', style: 'rose', timestamp: Date.now() },
+  { id: 'f30', content: "El amor propio es el romance que dura toda la vida.", author: "Eterno", theme: 'love', style: 'vintage', timestamp: Date.now() }
 ];
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 export const generateDailyNote = async (gender: Gender = 'female', mood: Mood = 'neutral'): Promise<Note> => {
+  // Helper to return random fallback
+  const getFallback = () => {
+    const randomIndex = Math.floor(Math.random() * FALLBACK_NOTES.length);
+    return { ...FALLBACK_NOTES[randomIndex], id: crypto.randomUUID(), timestamp: Date.now() }; // New ID to force re-render
+  };
+
   if (!API_KEY) {
     console.warn("API Key not found, returning fallback note.");
-    return FALLBACK_NOTES[Math.floor(Math.random() * FALLBACK_NOTES.length)];
+    return getFallback();
   }
 
   try {
@@ -77,26 +73,28 @@ export const generateDailyNote = async (gender: Gender = 'female', mood: Mood = 
       default: moodContext = "Estado normal. Nota inspiradora general.";
     }
 
+    // Add Random Seed to Prompt to prevent caching/repetition
+    const randomSeed = Math.random().toString(36).substring(7);
+
     const prompt = `
       Actúa como una voz sabia, 'aesthetic' y profunda (tipo consejera del alma o "el universo hablando").
       
       CONTEXTO:
       - Género: ${genderContext}
       - ESTADO DE ÁNIMO: ${moodContext}
+      - FACTOR ALEATORIO: ${randomSeed} (Usa esto para variar tu respuesta y no repetir frases anteriores).
 
       TU OBJETIVO: Generar una frase corta, impactante y sanadora para ese estado de ánimo específico.
 
       REGLAS DE ORO (ESTRICTAS):
-      1. PROHIBIDO usar vocativos como "amiga", "amigo", "hermana", "bro", "querida". Habla directamente a la situación o sentimiento.
-         - MAL: "Amiga, no te rindas."
-         - BIEN: "Rendirse no es una opción hoy."
+      1. PROHIBIDO usar vocativos repetitivos como "amiga", "amigo", "hermana". Habla directamente a la situación.
       2. CERO palabras rebuscadas. Lenguaje natural y moderno.
       3. VIBRA: Minimalista, profunda, directa al corazón.
       
       BALANCE DE TEMAS:
       - Mezcla psicología ("date cuenta") con espiritualidad ("Dios/Universo").
       
-      EJEMPLOS DE ESTILO:
+      EJEMPLOS DE ESTILO (NO LOS COPIES LITERALMENTE, CREA NUEVOS):
       - "No elijas a cualquiera, elige a esa persona que ore por ti."
       - "El mundo gira alrededor del sol, no alrededor de sus comentarios."
       - "Si te hace dudar de tu valor, ahí no es."
@@ -109,8 +107,8 @@ export const generateDailyNote = async (gender: Gender = 'female', mood: Mood = 
       model: "gemini-2.5-flash",
       contents: prompt,
       config: {
-        systemInstruction: "Eres una fuente de inspiración visual. Generas frases cortas. NUNCA usas la palabra 'amiga' ni 'amigo'.",
-        temperature: 1.1,
+        systemInstruction: "Eres una fuente de inspiración visual. Generas frases cortas y únicas cada vez.",
+        temperature: 1.3, // High temperature for maximum variety
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -126,13 +124,15 @@ export const generateDailyNote = async (gender: Gender = 'female', mood: Mood = 
 
     const jsonResponse = JSON.parse(response.text || '{}');
     
+    // Check if content is empty (failed generation)
+    if (!jsonResponse.content) return getFallback();
+
     // ALWAYS return 'classic' style by default as requested.
-    // User can change it manually in the UI.
     const defaultStyle: NoteStyle = 'classic';
 
     return {
       id: crypto.randomUUID(),
-      content: jsonResponse.content || FALLBACK_NOTES[0].content,
+      content: jsonResponse.content,
       author: jsonResponse.author || "Nota Diaria",
       theme: jsonResponse.theme || 'hope',
       style: defaultStyle,
@@ -141,7 +141,7 @@ export const generateDailyNote = async (gender: Gender = 'female', mood: Mood = 
 
   } catch (error) {
     console.error("Error generating note:", error);
-    return FALLBACK_NOTES[Math.floor(Math.random() * FALLBACK_NOTES.length)];
+    return getFallback();
   }
 };
 
@@ -155,36 +155,35 @@ export const analyzeImageForRestoration = async (base64Image: string): Promise<E
     const cleanBase64 = base64Image.replace(/^data:image\/[a-zA-Z+]+;base64,/, "");
 
     const prompt = `
-      ACTÚA COMO UN CURADOR DE CONTENIDO LITERARIO Y EMOCIONAL.
+      ACTÚA COMO UN CURADOR DE CONTENIDO LITERARIO ESTÉTICO (MODO ESTRICTO).
 
       TU MISIÓN:
-      Analizar si la imagen contiene un MENSAJE, FRASE, POEMA o CITA que tenga VALOR EMOCIONAL, INSPIRADOR O ESTÉTICO.
+      Analizar si la imagen contiene un MENSAJE, FRASE CORTA o CITA válida para una "Nota del Alma".
 
-      CRITERIOS DE VALIDACIÓN (MUY ESTRICTO - NO ACEPTES TEXTO BASURA):
+      CRITERIOS DE VALIDACIÓN (EXTREMADAMENTE ESTRICTO):
       
-      ✅ VÁLIDO (Acepta y extrae):
-      - Frases inspiradoras, tristes, de amor, desamor o motivación.
-      - Capturas de Tweets, Posts de Instagram o Notas de celular que contengan pensamientos profundos.
-      - Poemas, versos o escritos a mano con significado.
-      - Mensajes de chat que sean sentimentales (ej: una confesión, un consejo, una despedida).
+      ✅ VÁLIDO (Acepta):
+      - Frases cortas inspiradoras (Máximo ~40-50 palabras).
+      - Capturas de Tweets/Posts/Notas de celular con pensamientos breves y profundos.
+      - Poemas cortos o versos (Haikus, estrofas pequeñas).
+      - Mensajes de chat breves con valor sentimental.
       
-      ❌ INVÁLIDO (Rechaza inmediatamente aunque tenga texto):
-      - Capturas de interfaz de sistema (Menús de Wi-Fi, Batería, Ajustes, Pantalla de inicio).
-      - Tareas escolares, fórmulas matemáticas, cuestionarios o código de programación.
-      - Noticias, artículos periodísticos, publicidad o capturas de bancos.
-      - Conversaciones triviales o funcionales (ej: "¿Dónde estás?", "Compra leche", "Jajaja ok").
+      ❌ INVÁLIDO (Rechaza inmediatamente):
+      - ⛔ TEXTOS LARGOS: Artículos, páginas enteras de libros, parrafadas densas, cartas largas. (Si da pereza leerlo, RECHÁZALO).
+      - Capturas de interfaz de sistema (Menús, Wi-Fi, Batería, Mapas).
+      - Tareas escolares, matemáticas, cuestionarios.
+      - Noticias, periodismo o información técnica.
+      - Conversaciones triviales ("Hola", "¿Qué haces?").
       - Memes vulgares, chistes simples o capturas de videojuegos.
-      - Documentos, facturas o texto puramente informativo.
 
       SI ES VÁLIDO:
-      1. Extrae el texto completo del mensaje, corrigiendo errores obvios.
-      2. Si hay un autor visible, úsalo. Si no, pon "Anónimo" o deduce uno (ej: "Twitter", "Nota Mental").
-      3. Clasifica el tema (hope, courage, love, peace).
-      4. Sugiere un estilo visual adecuado para el mensaje.
+      1. Extrae el texto completo, limpiando errores.
+      2. Deduce un autor o pon "Anónimo".
+      3. Clasifica tema y estilo.
 
       SI ES INVÁLIDO:
       - Marca isValid: false.
-      - Explica la razón en 'errorReason' (ej: "Es una captura de un menú de ajustes, no es una frase inspiradora.").
+      - Explica la razón en 'errorReason' (ej: "El texto es demasiado largo. Esta app es para frases cortas e impactantes.", "No detecto una frase inspiradora, parece una captura de pantalla del sistema.").
     `;
 
     const response = await ai.models.generateContent({
@@ -196,7 +195,7 @@ export const analyzeImageForRestoration = async (base64Image: string): Promise<E
         ]
       },
       config: {
-        temperature: 0.4, // Low temperature for strict adherence to validation rules
+        temperature: 0.2, // Very low temperature for strict logic
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
