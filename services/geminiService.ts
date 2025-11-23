@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { Note, Gender, NoteStyle, Mood, ExtractionResult } from "../types";
 
@@ -5,36 +6,36 @@ const API_KEY = 'AIzaSyBHdYTVWfwOc1gTn4y4SVYfnE54RBSWEN0';
 
 // Expanded Fallback notes to prevent repetition if API fails
 const FALLBACK_NOTES: Note[] = [
-  { id: 'f1', content: "Recuerda que el mundo gira alrededor del sol y de su propio eje, no alrededor de las opiniones de ellos.", author: "Física Simple", theme: 'courage', style: 'midnight', timestamp: Date.now() },
-  { id: 'f2', content: "No elijas a cualquiera, elige a quien esté dispuesto a doblar rodillas ante Dios por ti.", author: "Estándares", theme: 'love', style: 'vintage', timestamp: Date.now() },
-  { id: 'f3', content: "Esa tormenta ya pasó. Deja de llover sobre mojado en tu mente.", author: "Paz Mental", theme: 'peace', style: 'botanical', timestamp: Date.now() },
-  { id: 'f4', content: "Eres el sol, deja de rogarle a una vela que te ilumine.", author: "Amor Propio", theme: 'hope', style: 'aura', timestamp: Date.now() },
-  { id: 'f5', content: "Si te costó tu paz mental, entonces te salió demasiado caro.", author: "Consejo", theme: 'courage', style: 'minimal', timestamp: Date.now() },
-  { id: 'f6', content: "No dejes que los comentarios de otros te hagan daño, ellos no conocen tu historia con Dios.", author: "Protección", theme: 'courage', style: 'classic', timestamp: Date.now() },
-  { id: 'f7', content: "Pon tu mente donde la tormenta ya acabó, aunque siga lloviendo afuera.", author: "Fe", theme: 'hope', style: 'cinema', timestamp: Date.now() },
-  { id: 'f8', content: "No eres lo que te pasó, eres quien decides ser ahora.", author: "Renacer", theme: 'hope', style: 'rose', timestamp: Date.now() },
-  { id: 'f9', content: "A veces Dios te quita el sueño para que despiertes.", author: "Señales", theme: 'peace', style: 'midnight', timestamp: Date.now() },
-  { id: 'f10', content: "Tu valor no disminuye por la incapacidad de alguien de verlo.", author: "Verdad", theme: 'love', style: 'classic', timestamp: Date.now() },
-  { id: 'f11', content: "El brillo que molesta a los demás es la luz que necesitas para tu camino.", author: "Luz Propia", theme: 'courage', style: 'aura', timestamp: Date.now() },
-  { id: 'f12', content: "No es soledad, es una cita contigo misma para reordenar el alma.", author: "Tiempo a solas", theme: 'peace', style: 'botanical', timestamp: Date.now() },
-  { id: 'f13', content: "Lo que es para ti, te encontrará incluso si te escondes.", author: "Destino", theme: 'hope', style: 'vintage', timestamp: Date.now() },
-  { id: 'f14', content: "Perdonar es liberar a un prisionero y descubrir que el prisionero eras tú.", author: "Libertad", theme: 'peace', style: 'minimal', timestamp: Date.now() },
-  { id: 'f15', content: "Sé la mujer que necesitabas cuando eras niña.", author: "Crecimiento", theme: 'love', style: 'rose', timestamp: Date.now() },
-  { id: 'f16', content: "Dios no te da la carga que pides, te da la espalda para cargarla.", author: "Fortaleza", theme: 'courage', style: 'cinema', timestamp: Date.now() },
-  { id: 'f17', content: "Deja de mirar el reloj, Dios tiene su propio tiempo.", author: "Paciencia", theme: 'hope', style: 'midnight', timestamp: Date.now() },
-  { id: 'f18', content: "Tu corazón es un jardín, deja de dejar entrar a gente que no riega las flores.", author: "Cuidado", theme: 'love', style: 'botanical', timestamp: Date.now() },
-  { id: 'f19', content: "No bajes la meta, aumenta el esfuerzo.", author: "Disciplina", theme: 'courage', style: 'minimal', timestamp: Date.now() },
-  { id: 'f20', content: "Respira. Es solo un mal día, no una mala vida.", author: "Perspectiva", theme: 'peace', style: 'aura', timestamp: Date.now() },
-  { id: 'f21', content: "Nadie es como tú, y ese es tu poder.", author: "Autenticidad", theme: 'love', style: 'classic', timestamp: Date.now() },
-  { id: 'f22', content: "Agradece incluso por las puertas que se cerraron.", author: "Gratitud", theme: 'hope', style: 'vintage', timestamp: Date.now() },
-  { id: 'f23', content: "Florece donde te planten, pero si la tierra es mala, muévete.", author: "Cambio", theme: 'courage', style: 'botanical', timestamp: Date.now() },
-  { id: 'f24', content: "Tu paz es el nuevo éxito.", author: "Prioridades", theme: 'peace', style: 'minimal', timestamp: Date.now() },
-  { id: 'f25', content: "Si no suma, que no reste. Y si resta, que se vaya.", author: "Matemáticas de Vida", theme: 'courage', style: 'rose', timestamp: Date.now() },
-  { id: 'f26', content: "Dios convierte las crisis en clases.", author: "Aprendizaje", theme: 'hope', style: 'classic', timestamp: Date.now() },
-  { id: 'f27', content: "La intuición es el GPS del alma, no la silencies.", author: "Escúchate", theme: 'peace', style: 'midnight', timestamp: Date.now() },
-  { id: 'f28', content: "Que tus sueños sean más grandes que tus miedos.", author: "Valentía", theme: 'courage', style: 'aura', timestamp: Date.now() },
-  { id: 'f29', content: "No necesitas brillar para nadie más que para ti.", author: "Esencia", theme: 'love', style: 'rose', timestamp: Date.now() },
-  { id: 'f30', content: "El amor propio es el romance que dura toda la vida.", author: "Eterno", theme: 'love', style: 'vintage', timestamp: Date.now() }
+  { id: 'f1', content: "Recuerda que el mundo gira alrededor del sol y de su propio eje, no alrededor de las opiniones de ellos.", author: "Física Simple", theme: 'courage', style: 'midnight', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f2', content: "No elijas a cualquiera, elige a quien esté dispuesto a doblar rodillas ante Dios por ti.", author: "Estándares", theme: 'love', style: 'vintage', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f3', content: "Esa tormenta ya pasó. Deja de llover sobre mojado en tu mente.", author: "Paz Mental", theme: 'peace', style: 'botanical', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f4', content: "Eres el sol, deja de rogarle a una vela que te ilumine.", author: "Amor Propio", theme: 'hope', style: 'aura', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f5', content: "Si te costó tu paz mental, entonces te salió demasiado caro.", author: "Consejo", theme: 'courage', style: 'minimal', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f6', content: "No dejes que los comentarios de otros te hagan daño, ellos no conocen tu historia con Dios.", author: "Protección", theme: 'courage', style: 'classic', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f7', content: "Pon tu mente donde la tormenta ya acabó, aunque siga lloviendo afuera.", author: "Fe", theme: 'hope', style: 'cinema', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f8', content: "No eres lo que te pasó, eres quien decides ser ahora.", author: "Renacer", theme: 'hope', style: 'rose', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f9', content: "A veces Dios te quita el sueño para que despiertes.", author: "Señales", theme: 'peace', style: 'midnight', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f10', content: "Tu valor no disminuye por la incapacidad de alguien de verlo.", author: "Verdad", theme: 'love', style: 'classic', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f11', content: "El brillo que molesta a los demás es la luz que necesitas para tu camino.", author: "Luz Propia", theme: 'courage', style: 'aura', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f12', content: "No es soledad, es una cita contigo misma para reordenar el alma.", author: "Tiempo a solas", theme: 'peace', style: 'botanical', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f13', content: "Lo que es para ti, te encontrará incluso si te escondes.", author: "Destino", theme: 'hope', style: 'vintage', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f14', content: "Perdonar es liberar a un prisionero y descubrir que el prisionero eras tú.", author: "Libertad", theme: 'peace', style: 'minimal', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f15', content: "Sé la mujer que necesitabas cuando eras niña.", author: "Crecimiento", theme: 'love', style: 'rose', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f16', content: "Dios no te da la carga que pides, te da la espalda para cargarla.", author: "Fortaleza", theme: 'courage', style: 'cinema', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f17', content: "Deja de mirar el reloj, Dios tiene su propio tiempo.", author: "Paciencia", theme: 'hope', style: 'midnight', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f18', content: "Tu corazón es un jardín, deja de dejar entrar a gente que no riega las flores.", author: "Cuidado", theme: 'love', style: 'botanical', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f19', content: "No bajes la meta, aumenta el esfuerzo.", author: "Disciplina", theme: 'courage', style: 'minimal', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f20', content: "Respira. Es solo un mal día, no una mala vida.", author: "Perspectiva", theme: 'peace', style: 'aura', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f21', content: "Nadie es como tú, y ese es tu poder.", author: "Autenticidad", theme: 'love', style: 'classic', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f22', content: "Agradece incluso por las puertas que se cerraron.", author: "Gratitud", theme: 'hope', style: 'vintage', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f23', content: "Florece donde te planten, pero si la tierra es mala, muévete.", author: "Cambio", theme: 'courage', style: 'botanical', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f24', content: "Tu paz es el nuevo éxito.", author: "Prioridades", theme: 'peace', style: 'minimal', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f25', content: "Si no suma, que no reste. Y si resta, que se vaya.", author: "Matemáticas de Vida", theme: 'courage', style: 'rose', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f26', content: "Dios convierte las crisis en clases.", author: "Aprendizaje", theme: 'hope', style: 'classic', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f27', content: "La intuición es el GPS del alma, no la silencies.", author: "Escúchate", theme: 'peace', style: 'midnight', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f28', content: "Que tus sueños sean más grandes que tus miedos.", author: "Valentía", theme: 'courage', style: 'aura', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f29', content: "No necesitas brillar para nadie más que para ti.", author: "Esencia", theme: 'love', style: 'rose', timestamp: Date.now(), isGeneratedByAI: false },
+  { id: 'f30', content: "El amor propio es el romance que dura toda la vida.", author: "Eterno", theme: 'love', style: 'vintage', timestamp: Date.now(), isGeneratedByAI: false }
 ];
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
@@ -43,7 +44,7 @@ export const generateDailyNote = async (gender: Gender = 'female', mood: Mood = 
   // Helper to return random fallback
   const getFallback = () => {
     const randomIndex = Math.floor(Math.random() * FALLBACK_NOTES.length);
-    return { ...FALLBACK_NOTES[randomIndex], id: crypto.randomUUID(), timestamp: Date.now() }; // New ID to force re-render
+    return { ...FALLBACK_NOTES[randomIndex], id: crypto.randomUUID(), timestamp: Date.now(), isGeneratedByAI: false }; // Ensure fallback flag
   };
 
   if (!API_KEY) {
@@ -136,7 +137,8 @@ export const generateDailyNote = async (gender: Gender = 'female', mood: Mood = 
       author: jsonResponse.author || "Nota Diaria",
       theme: jsonResponse.theme || 'hope',
       style: defaultStyle,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      isGeneratedByAI: true // Success flag
     };
 
   } catch (error) {
@@ -218,6 +220,11 @@ export const analyzeImageForRestoration = async (base64Image: string): Promise<E
     });
 
     const result = JSON.parse(response.text || '{}');
+    
+    // In restoration, we treat it as "AI Generated" (or at least processed)
+    if (result.note) {
+        return { ...result, note: { ...result.note, isGeneratedByAI: true }};
+    }
     return result as ExtractionResult;
 
   } catch (error) {

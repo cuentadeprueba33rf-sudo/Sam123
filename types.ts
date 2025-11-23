@@ -14,6 +14,7 @@ export interface Note {
   theme: 'hope' | 'courage' | 'love' | 'peace';
   style: NoteStyle;
   timestamp: number;
+  isGeneratedByAI?: boolean; // New flag to distinguish source
 }
 
 export interface UserSettings {

@@ -1,6 +1,7 @@
+
 import React, { useState, useRef } from 'react';
 import { Note } from '../types';
-import { Quote, Sparkles, Moon, Star, Leaf, Film, Feather, Heart } from 'lucide-react';
+import { Quote, Sparkles, Moon, Star, Leaf, Film, Feather, Heart, BookOpen } from 'lucide-react';
 
 interface NoteCardProps {
   note: Note;
@@ -51,6 +52,10 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
   };
 
   const fontSizeClass = getDynamicFontSize(note.content);
+
+  // Determine text color for the badge based on style
+  const isDarkStyle = ['midnight', 'cinema'].includes(note.style);
+  const badgeColorClass = isDarkStyle ? 'text-white/30' : 'text-ink/30';
 
   // --- CLASSIC STYLE (UNTOUCHED) ---
   const renderClassic = () => {
@@ -348,6 +353,22 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
         cursor-default
       `}>
         {renderStyle()}
+
+        {/* ORIGIN BADGE - Shows if AI generated or Fallback */}
+        {/* Positioned absolutely within the card content so it appears in screenshots too */}
+        <div className={`absolute bottom-3 right-4 z-20 flex items-center gap-1.5 ${badgeColorClass}`}>
+           {note.isGeneratedByAI ? (
+             <>
+               <Sparkles className="w-3 h-3" />
+               <span className="font-sans text-[8px] uppercase tracking-widest opacity-70">Inspiración en vivo</span>
+             </>
+           ) : (
+             <>
+               <BookOpen className="w-3 h-3" />
+               <span className="font-sans text-[8px] uppercase tracking-widest opacity-70">Colección Eterna</span>
+             </>
+           )}
+        </div>
       </div>
       
       {/* Date hint underneath - only in view mode */}
