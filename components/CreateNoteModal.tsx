@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { X, Check } from 'lucide-react';
 import { Note, NoteStyle } from '../types';
@@ -97,6 +98,10 @@ const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ isOpen, onClose, onCr
                 { id: 'midnight', label: 'Noche', bg: 'bg-slate-800 text-white border-slate-600' },
                 { id: 'aura', label: 'Aura', bg: 'bg-gradient-to-br from-purple-100 to-blue-100 border-purple-200' },
                 { id: 'minimal', label: 'Minimal', bg: 'bg-gray-100 border-gray-200 font-bold' },
+                { id: 'botanical', label: 'Botánica', bg: 'bg-[#F3F6F3] border-[#8FBC8F] text-[#2F4F4F]' },
+                { id: 'cinema', label: 'Cine', bg: 'bg-black text-white border-stone-700' },
+                { id: 'vintage', label: 'Retro', bg: 'bg-[#F5F1E6] border-[#8B4513]' },
+                { id: 'rose', label: 'Rose', bg: 'bg-[#FFF0F5] border-pink-200' },
               ].map((s) => (
                 <button
                   key={s.id}
@@ -104,7 +109,7 @@ const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ isOpen, onClose, onCr
                   onClick={() => setStyle(s.id as NoteStyle)}
                   className={`h-16 rounded-lg border flex items-center justify-center transition-all ${s.bg} ${style === s.id ? 'ring-2 ring-offset-1 ring-ink' : 'opacity-70 hover:opacity-100'}`}
                 >
-                   <span className="text-[10px] font-sans uppercase">{s.label}</span>
+                   <span className="text-[10px] font-sans uppercase truncate px-1">{s.label}</span>
                 </button>
               ))}
             </div>

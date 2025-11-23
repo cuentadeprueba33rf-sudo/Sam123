@@ -15,6 +15,39 @@ declare global {
   }
 }
 
+// New Component: Zen Breathing Loader
+const BreathingLoader = () => {
+  const [text, setText] = useState("Inhala...");
+  
+  useEffect(() => {
+    const cycle = [
+      { t: "Inhala...", d: 0 },
+      { t: "Sostén...", d: 2000 },
+      { t: "Exhala...", d: 4000 }
+    ];
+    
+    let currentIndex = 0;
+    
+    const interval = setInterval(() => {
+      currentIndex = (currentIndex + 1) % cycle.length;
+      setText(cycle[currentIndex].t);
+    }, 2000); // Change text every 2 seconds roughly matching the breathing
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center h-96">
+      <div className="relative flex items-center justify-center">
+        {/* Breathing Circle */}
+        <div className="w-24 h-24 bg-white/20 rounded-full animate-breathe absolute blur-xl"></div>
+        <div className="w-20 h-20 bg-white/30 rounded-full animate-breathe absolute backdrop-blur-sm border border-white/50"></div>
+        <div className="font-serif text-stone-400 z-10 italic text-xl animate-pulse">{text}</div>
+      </div>
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
   const [savedNotes, setSavedNotes] = useState<Note[]>([]);
@@ -99,7 +132,8 @@ const App: React.FC = () => {
   // Cycle through visual styles without changing text
   const handleCycleStyle = () => {
     if (!currentNote) return;
-    const styles: NoteStyle[] = ['classic', 'midnight', 'aura', 'minimal'];
+    // ORDER: Classic first, then the new ones
+    const styles: NoteStyle[] = ['classic', 'midnight', 'aura', 'minimal', 'botanical', 'cinema', 'vintage', 'rose'];
     const currentIndex = styles.indexOf(currentNote.style || 'classic');
     const nextIndex = (currentIndex + 1) % styles.length;
     
@@ -181,12 +215,24 @@ const App: React.FC = () => {
 
   const isSaved = currentNote ? savedNotes.some(n => n.id === currentNote.id) : false;
 
+  // Determine background color based on style
+  const getBackgroundColor = (style?: NoteStyle) => {
+    switch(style) {
+      case 'midnight': return '#0f1115';
+      case 'cinema': return '#1a1a1a';
+      case 'botanical': return '#e8ede8';
+      case 'vintage': return '#ebe6da';
+      case 'rose': return '#fff0f5';
+      default: return '#F0EFEB';
+    }
+  };
+
   return (
     <div 
       className={`min-h-screen w-full relative flex flex-col items-center justify-center transition-colors duration-500 ${screenshotMode ? 'bg-stone-100 cursor-zoom-out' : ''}`}
       onClick={() => setScreenshotMode(false)}
       style={{
-        backgroundColor: currentNote?.style === 'midnight' ? '#0f1115' : '#F0EFEB',
+        backgroundColor: getBackgroundColor(currentNote?.style),
         transition: 'background-color 0.5s ease'
       }}
     >
@@ -202,8 +248,8 @@ const App: React.FC = () => {
             width: '1080px',
             height: '1920px',
             zIndex: -1,
-            backgroundColor: currentNote.style === 'midnight' ? '#0f1115' : '#F0EFEB',
-            backgroundImage: currentNote.style !== 'midnight' 
+            backgroundColor: getBackgroundColor(currentNote.style),
+            backgroundImage: (!['midnight', 'cinema'].includes(currentNote.style))
               ? `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`
               : 'none',
             display: 'flex',
@@ -219,10 +265,10 @@ const App: React.FC = () => {
           </div>
           
           <div className="absolute bottom-40 text-center opacity-70">
-            <p className={`font-serif text-4xl italic tracking-wider ${currentNote.style === 'midnight' ? 'text-white' : 'text-stone-800'}`}>
+            <p className={`font-serif text-4xl italic tracking-wider ${['midnight', 'cinema'].includes(currentNote.style) ? 'text-white' : 'text-stone-800'}`}>
               Notas del Alma
             </p>
-            <p className={`font-sans text-xl uppercase tracking-[0.3em] mt-4 ${currentNote.style === 'midnight' ? 'text-stone-500' : 'text-stone-400'}`}>
+            <p className={`font-sans text-xl uppercase tracking-[0.3em] mt-4 ${['midnight', 'cinema'].includes(currentNote.style) ? 'text-stone-500' : 'text-stone-400'}`}>
               @notasdelalma
             </p>
           </div>
@@ -245,12 +291,12 @@ const App: React.FC = () => {
       {/* Header / Nav - Hidden in Screenshot Mode */}
       <nav className={`fixed top-0 w-full p-6 flex justify-between items-center z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 -translate-y-10 pointer-events-none' : 'opacity-100'}`}>
         <div className="flex items-center gap-2">
-           <div className={`w-2 h-2 rounded-full animate-pulse ${currentNote?.style === 'midnight' ? 'bg-white' : 'bg-ink'}`}></div>
-           <span className={`font-serif italic text-lg ${currentNote?.style === 'midnight' ? 'text-white' : 'text-ink'}`}>Notas del Alma</span>
+           <div className={`w-2 h-2 rounded-full animate-pulse ${['midnight', 'cinema'].includes(currentNote?.style || '') ? 'bg-white' : 'bg-ink'}`}></div>
+           <span className={`font-serif italic text-lg ${['midnight', 'cinema'].includes(currentNote?.style || '') ? 'text-white' : 'text-ink'}`}>Notas del Alma</span>
         </div>
         <button 
           onClick={(e) => { e.stopPropagation(); setIsMenuOpen(true); }}
-          className={`p-2 rounded-full transition-colors ${currentNote?.style === 'midnight' ? 'hover:bg-white/10 text-white' : 'hover:bg-white/50 text-ink'}`}
+          className={`p-2 rounded-full transition-colors ${['midnight', 'cinema'].includes(currentNote?.style || '') ? 'hover:bg-white/10 text-white' : 'hover:bg-white/50 text-ink'}`}
         >
           <MenuIcon className="w-6 h-6" />
         </button>
@@ -259,10 +305,7 @@ const App: React.FC = () => {
       {/* Main Content Area */}
       <main className={`w-full max-w-xl px-4 transition-all duration-500 ${screenshotMode ? 'scale-105' : 'scale-100'}`}>
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-96">
-            <div className={`w-12 h-12 border-4 border-t-current rounded-full animate-spin mb-4 ${currentNote?.style === 'midnight' ? 'border-stone-700 text-white' : 'border-stone-200 text-ink'}`}></div>
-            <p className={`font-serif animate-pulse ${currentNote?.style === 'midnight' ? 'text-stone-400' : 'text-stone-400'}`}>Sintonizando con tu energía...</p>
-          </div>
+          <BreathingLoader />
         ) : (
           currentNote && <NoteCard note={currentNote} viewMode={screenshotMode || isGeneratingImage} />
         )}

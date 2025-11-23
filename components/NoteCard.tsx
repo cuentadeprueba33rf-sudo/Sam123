@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { Note } from '../types';
-import { Quote, Sparkles, Moon, Sun } from 'lucide-react';
+import { Quote, Sparkles, Moon, Star, Leaf, Film, Feather, Heart } from 'lucide-react';
 
 interface NoteCardProps {
   note: Note;
@@ -10,7 +10,38 @@ interface NoteCardProps {
 }
 
 const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id }) => {
-  
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // 3D Parallax Logic
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    if (viewMode || !cardRef.current) return;
+
+    const card = cardRef.current;
+    const rect = card.getBoundingClientRect();
+    
+    // Handle both mouse and touch
+    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Calculate rotation (limit max degrees for subtle effect)
+    const rotateX = ((y - centerY) / centerY) * -5; // Max 5 deg tilt X
+    const rotateY = ((x - centerX) / centerX) * 5;  // Max 5 deg tilt Y
+
+    setTilt({ x: rotateX, y: rotateY });
+  };
+
+  const handleMouseLeave = () => {
+    // Reset to flat
+    setTilt({ x: 0, y: 0 });
+  };
+
   // Calculate dynamic font size based on text length
   const getDynamicFontSize = (text: string) => {
     const len = text.length;
@@ -21,7 +52,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
 
   const fontSizeClass = getDynamicFontSize(note.content);
 
-  // --- CLASSIC STYLE ---
+  // --- CLASSIC STYLE (UNTOUCHED) ---
   const renderClassic = () => {
      const getThemeStyles = (theme: string) => {
       switch (theme) {
@@ -40,7 +71,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
           <Quote className="w-8 h-8 rotate-180" />
         </div>
         <div className="relative z-10 space-y-6 my-auto">
-          <h1 className={`font-serif ${fontSizeClass} text-ink font-medium tracking-tight text-pretty drop-shadow-sm transition-all duration-300`}>
+          <h1 className={`font-serif ${fontSizeClass} text-ink font-medium tracking-tight text-pretty drop-shadow-sm transition-all duration-300 select-none`}>
             {note.content}
           </h1>
         </div>
@@ -50,7 +81,6 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
             {note.author}
           </p>
         </div>
-        {/* Paper Texture */}
         <div 
           className="absolute inset-0 opacity-20 pointer-events-none"
           style={{
@@ -64,33 +94,28 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
   // --- MIDNIGHT STYLE ---
   const renderMidnight = () => {
     return (
-      <div className="relative w-full h-full bg-[#0F1115] flex flex-col justify-center items-center text-center p-8 md:p-12 overflow-hidden">
-        {/* Stars / Sparkles */}
-        <div className="absolute top-10 left-10 text-white/20 animate-pulse"><Sparkles className="w-4 h-4" /></div>
-        <div className="absolute bottom-20 right-10 text-white/20 animate-pulse delay-700"><Sparkles className="w-6 h-6" /></div>
-        <div className="absolute top-1/2 right-8 text-white/10"><Moon className="w-12 h-12" /></div>
-        
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent pointer-events-none"></div>
-
+      <div className="relative w-full h-full bg-[#050505] flex flex-col justify-center items-center text-center p-8 md:p-12 overflow-hidden border border-stone-800">
+        <div className="absolute inset-2 border border-white/10 rounded-sm"></div>
+        <div className="absolute top-12 left-12 text-white/30 animate-pulse"><Star className="w-3 h-3 fill-white" /></div>
+        <div className="absolute bottom-20 right-10 text-white/20 animate-pulse delay-700"><Sparkles className="w-5 h-5" /></div>
+        <div className="absolute top-8 text-white/10">
+          <Moon className="w-8 h-8" />
+        </div>
         <div className="relative z-10 space-y-6 my-auto">
-          <h1 className={`font-serif ${fontSizeClass} text-stone-100 font-light tracking-wide text-pretty drop-shadow-lg transition-all duration-300`}>
-            "{note.content}"
+          <h1 className={`font-serif ${fontSizeClass} text-stone-100 font-light tracking-wide text-pretty drop-shadow-[0_0_15px_rgba(255,255,255,0.15)] transition-all duration-300 select-none`}>
+            {note.content}
           </h1>
         </div>
         <div className="absolute bottom-12 w-full px-12">
-          <p className="font-sans text-[10px] uppercase tracking-[0.3em] text-stone-400 border-t border-white/10 pt-4 inline-block px-6">
+          <div className="flex items-center justify-center gap-4 mb-4 opacity-30">
+             <div className="h-px w-8 bg-white"></div>
+             <div className="w-1 h-1 rounded-full bg-white"></div>
+             <div className="h-px w-8 bg-white"></div>
+          </div>
+          <p className="font-sans text-[10px] uppercase tracking-[0.3em] text-stone-400">
             {note.author}
           </p>
         </div>
-        
-        {/* Grain */}
-         <div 
-          className="absolute inset-0 opacity-5 pointer-events-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E")`
-          }}
-        />
       </div>
     );
   };
@@ -99,28 +124,28 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
   const renderAura = () => {
     const getGradient = (theme: string) => {
       switch(theme) {
-        case 'love': return 'from-rose-200 via-purple-100 to-orange-100';
-        case 'peace': return 'from-blue-200 via-teal-100 to-indigo-100';
-        case 'courage': return 'from-orange-200 via-amber-100 to-rose-100';
-        default: return 'from-purple-200 via-pink-100 to-blue-100';
+        case 'love': return 'bg-gradient-to-br from-[#ffDEE9] via-[#B5FFFC] to-[#FF9A9E]';
+        case 'peace': return 'bg-gradient-to-tr from-[#E0C3FC] via-[#8EC5FC] to-[#E0C3FC]';
+        case 'courage': return 'bg-gradient-to-bl from-[#fad0c4] via-[#ffd1ff] to-[#f6d365]';
+        default: return 'bg-gradient-to-br from-[#a18cd1] via-[#fbc2eb] to-[#a6c1ee]';
       }
     };
-
     return (
-      <div className={`relative w-full h-full bg-gradient-to-br ${getGradient(note.theme)} flex flex-col justify-center items-center text-center p-8 md:p-12`}>
-        {/* Blurred Orbs */}
-        <div className="absolute top-0 left-0 w-48 h-48 bg-white/40 rounded-full blur-3xl transform -translate-x-10 -translate-y-10"></div>
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/30 rounded-full blur-3xl transform translate-x-10 translate-y-10"></div>
-
-        <div className="relative z-10 space-y-6 my-auto">
-          <h1 className={`font-serif ${fontSizeClass} text-ink/80 italic font-medium tracking-tight text-pretty transition-all duration-300`}>
-            {note.content}
-          </h1>
-        </div>
-        <div className="absolute bottom-12 w-full px-12">
-          <p className="font-sans text-xs font-bold uppercase tracking-widest text-white/80 drop-shadow-sm">
-            ✦ {note.author} ✦
-          </p>
+      <div className={`relative w-full h-full ${getGradient(note.theme)} flex flex-col justify-center items-center text-center p-6`}>
+        <div className="relative w-full h-full bg-white/30 backdrop-blur-md rounded-xl border border-white/40 shadow-sm flex flex-col justify-center items-center p-8">
+          <div className="absolute -top-3 -right-3 text-white/80 animate-float">
+             <Sparkles className="w-8 h-8" />
+          </div>
+          <div className="relative z-10 space-y-6 my-auto">
+            <h1 className={`font-serif ${fontSizeClass} text-ink/90 italic font-medium tracking-tight text-pretty transition-all duration-300 drop-shadow-sm select-none`}>
+              {note.content}
+            </h1>
+          </div>
+          <div className="mt-8 pt-4 border-t border-white/50 w-full max-w-[120px]">
+            <p className="font-sans text-[10px] font-bold uppercase tracking-widest text-ink/60">
+              {note.author}
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -128,36 +153,155 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
 
   // --- MINIMAL STYLE ---
   const renderMinimal = () => {
-     const getBg = (theme: string) => {
-      switch(theme) {
-        case 'love': return 'bg-[#FFF0F0]'; // Soft Pink
-        case 'peace': return 'bg-[#F0F4FF]'; // Soft Blue
-        case 'courage': return 'bg-[#FFF8F0]'; // Soft Orange
-        default: return 'bg-[#F5F5F5]'; // Light Grey
-      }
-    };
-
     return (
-      <div className={`relative w-full h-full ${getBg(note.theme)} flex flex-col justify-between items-start text-left p-8 md:p-10`}>
-        <div className="w-full flex justify-between items-center">
-          <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center">
-            <Sun className="w-4 h-4 text-ink/50" />
-          </div>
-          <span className="font-mono text-[10px] text-ink/40">
-            {new Date(note.timestamp).toLocaleDateString()}
+      <div className="relative w-full h-full bg-white flex flex-col justify-between p-8 md:p-10 border border-stone-100">
+        <div className="w-full flex justify-between items-start border-b border-black pb-4">
+          <div className="w-4 h-4 bg-black rounded-full"></div>
+          <span className="font-sans font-bold text-xs uppercase tracking-tighter text-black">
+            NO. {new Date(note.timestamp).getDate().toString().padStart(2, '0')}
           </span>
         </div>
-
         <div className="my-auto">
-          <h1 className={`font-sans ${fontSizeClass} font-bold text-ink tracking-tight text-pretty transition-all duration-300`}>
+          <h1 className={`font-sans ${fontSizeClass} font-bold text-black tracking-tighter text-pretty leading-[0.9] transition-all duration-300 uppercase select-none`}>
             {note.content}
           </h1>
         </div>
+        <div className="w-full flex justify-end items-end">
+          <div className="text-right">
+             <p className="font-serif italic text-sm text-stone-500 mb-1">written by</p>
+             <p className="font-sans font-bold text-xs uppercase tracking-widest text-black bg-black text-white px-2 py-1 inline-block">
+                {note.author}
+             </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
-        <div className="w-full pt-8 border-t border-black/5">
-          <p className="font-mono text-xs text-ink/60">
-             — {note.author}
-          </p>
+  // --- BOTANICAL STYLE ---
+  const renderBotanical = () => {
+    return (
+      <div className="relative w-full h-full bg-[#F3F6F3] flex flex-col justify-center items-center text-center p-8 border-8 border-double border-[#8FBC8F]/30">
+        <div className="absolute top-4 left-4 text-[#8FBC8F] opacity-60">
+          <Leaf className="w-8 h-8 rotate-[-45deg]" />
+        </div>
+        <div className="absolute bottom-4 right-4 text-[#8FBC8F] opacity-60">
+          <Leaf className="w-8 h-8 rotate-[135deg]" />
+        </div>
+        
+        <div className="relative z-10 space-y-8 my-auto max-w-[90%]">
+          <h1 className={`font-serif ${fontSizeClass} text-[#2F4F4F] font-normal tracking-wide text-pretty drop-shadow-sm select-none`}>
+            {note.content}
+          </h1>
+        </div>
+        
+        <div className="absolute bottom-10 w-full flex justify-center">
+           <div className="px-6 py-2 border-t border-b border-[#8FBC8F]/40">
+              <p className="font-serif italic text-[#556B2F] text-sm">
+                — {note.author} —
+              </p>
+           </div>
+        </div>
+        
+        <div 
+          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%232F4F4F' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3C/g%3E%3C/svg%3E")`
+          }}
+        />
+      </div>
+    );
+  };
+
+  // --- CINEMA STYLE ---
+  const renderCinema = () => {
+    return (
+      <div className="relative w-full h-full bg-[#111] flex flex-col justify-center items-center text-center overflow-hidden">
+        <div 
+          className="absolute inset-0 opacity-20 pointer-events-none z-0"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E")`
+          }}
+        />
+        
+        <div className="absolute top-0 w-full h-16 bg-black z-10 border-b border-stone-800"></div>
+        <div className="absolute bottom-0 w-full h-16 bg-black z-10 border-t border-stone-800 flex items-center justify-center">
+             <div className="flex items-center gap-2 opacity-50">
+                <Film className="w-3 h-3 text-white" />
+                <span className="text-[8px] text-white font-mono tracking-widest">SCENE {new Date(note.timestamp).getDay() + 1}</span>
+             </div>
+        </div>
+
+        <div className="relative z-10 px-8 my-auto">
+          <h1 className={`font-sans ${fontSizeClass} italic font-medium text-[#F0E68C] text-pretty drop-shadow-md leading-relaxed tracking-wide select-none`}>
+            "{note.content}"
+          </h1>
+        </div>
+
+        <div className="relative z-10 mb-20 opacity-70">
+           <p className="font-sans text-[10px] uppercase tracking-widest text-white/60">
+             Directed by {note.author}
+           </p>
+        </div>
+      </div>
+    );
+  };
+
+  // --- VINTAGE STYLE ---
+  const renderVintage = () => {
+    return (
+      <div className="relative w-full h-full bg-[#F5F1E6] flex flex-col justify-center items-center text-center p-8">
+        <div className="absolute inset-4 border-2 border-dashed border-[#8B4513]/30 pointer-events-none"></div>
+        
+        <div className="absolute top-8 right-8 w-16 h-16 border-2 border-[#8B4513]/20 rounded-full flex items-center justify-center rotate-12 opacity-40">
+           <Feather className="w-6 h-6 text-[#8B4513]" />
+        </div>
+
+        <div className="relative z-10 space-y-6 my-auto">
+          <h1 className={`font-serif ${fontSizeClass} text-[#3E2723] font-medium tracking-normal text-pretty select-none`}>
+            {note.content}
+          </h1>
+        </div>
+        
+        <div className="absolute bottom-12 w-full">
+           <p className="font-serif italic text-[#8B4513] text-sm mb-1 opacity-70">Sinceramente,</p>
+           <p className="font-serif font-bold text-[#5D4037] text-xs uppercase tracking-widest">
+             {note.author}
+           </p>
+        </div>
+        
+        <div 
+          className="absolute inset-0 bg-yellow-900/5 pointer-events-none mix-blend-multiply" 
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 3h1v1H1V3zm2-2h1v1H3V1z' fill='%238B4513' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`
+          }}
+        />
+      </div>
+    );
+  };
+
+  // --- ROSE STYLE ---
+  const renderRose = () => {
+    return (
+      <div className="relative w-full h-full bg-[#FFF0F5] flex flex-col justify-center items-center text-center p-6 border-[12px] border-white shadow-inner">
+        <div className="absolute inset-0 border border-pink-200 m-3 rounded-[30px] pointer-events-none"></div>
+        
+        <div className="absolute top-8 text-pink-300 opacity-80">
+          <Heart className="w-6 h-6 fill-pink-100" />
+        </div>
+
+        <div className="relative z-10 space-y-6 my-auto px-4">
+          <h1 className={`font-serif ${fontSizeClass} text-[#DB7093] italic font-medium tracking-tight text-pretty drop-shadow-sm select-none`}>
+            {note.content}
+          </h1>
+        </div>
+        
+        <div className="absolute bottom-10 w-full">
+           <div className="inline-block px-4 py-1 bg-white rounded-full shadow-sm border border-pink-100">
+             <p className="font-serif text-[#C71585] text-xs tracking-wider">
+               con amor, {note.author}
+             </p>
+           </div>
         </div>
       </div>
     );
@@ -169,22 +313,39 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
       case 'midnight': return renderMidnight();
       case 'aura': return renderAura();
       case 'minimal': return renderMinimal();
+      case 'botanical': return renderBotanical();
+      case 'cinema': return renderCinema();
+      case 'vintage': return renderVintage();
+      case 'rose': return renderRose();
       default: return renderClassic();
     }
   };
 
   return (
-    <div className={`relative w-full max-w-md mx-auto perspective-1000 ${className}`}>
+    <div 
+      className={`relative w-full max-w-md mx-auto perspective-1000 ${className}`}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onTouchMove={handleMouseMove}
+      onTouchEnd={handleMouseLeave}
+    >
       <div 
         id={id}
+        ref={cardRef}
+        style={{
+          transform: !viewMode 
+            ? `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(1)` 
+            : 'none',
+          transition: !viewMode ? 'transform 0.1s ease-out' : 'none'
+        }}
         className={`
         relative 
         aspect-[4/5] 
         shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] 
-        transition-all duration-700 ease-out
         animate-fade-in
         overflow-hidden
         bg-white
+        cursor-default
       `}>
         {renderStyle()}
       </div>

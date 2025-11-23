@@ -3,8 +3,6 @@ import { Note, Gender, NoteStyle, Mood } from "../types";
 
 const API_KEY = 'AIzaSyBHdYTVWfwOc1gTn4y4SVYfnE54RBSWEN0';
 
-const STYLES: NoteStyle[] = ['classic', 'midnight', 'aura', 'minimal'];
-
 // Fallback notes mixed: Secular, Spiritual, and Tough Love
 const FALLBACK_NOTES: Note[] = [
   {
@@ -20,7 +18,7 @@ const FALLBACK_NOTES: Note[] = [
     content: "No elijas a cualquiera, elige a quien esté dispuesto a doblar rodillas ante Dios por ti.",
     author: "Estándares",
     theme: 'love',
-    style: 'midnight',
+    style: 'classic',
     timestamp: Date.now()
   },
   {
@@ -28,7 +26,7 @@ const FALLBACK_NOTES: Note[] = [
     content: "Esa tormenta ya pasó. Deja de llover sobre mojado en tu mente.",
     author: "Paz Mental",
     theme: 'peace',
-    style: 'aura',
+    style: 'classic',
     timestamp: Date.now()
   },
   {
@@ -36,7 +34,7 @@ const FALLBACK_NOTES: Note[] = [
     content: "Eres el sol, deja de rogarle a una vela que te ilumine.",
     author: "Amor Propio",
     theme: 'hope',
-    style: 'minimal',
+    style: 'classic',
     timestamp: Date.now()
   },
   {
@@ -128,15 +126,16 @@ export const generateDailyNote = async (gender: Gender = 'female', mood: Mood = 
 
     const jsonResponse = JSON.parse(response.text || '{}');
     
-    // Randomly assign a visual style
-    const randomStyle = STYLES[Math.floor(Math.random() * STYLES.length)];
+    // ALWAYS return 'classic' style by default as requested.
+    // User can change it manually in the UI.
+    const defaultStyle: NoteStyle = 'classic';
 
     return {
       id: crypto.randomUUID(),
       content: jsonResponse.content || FALLBACK_NOTES[0].content,
       author: jsonResponse.author || "Nota Diaria",
       theme: jsonResponse.theme || 'hope',
-      style: randomStyle,
+      style: defaultStyle,
       timestamp: Date.now()
     };
 

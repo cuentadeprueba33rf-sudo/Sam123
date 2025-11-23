@@ -1,6 +1,7 @@
+
 export type Gender = 'female' | 'male' | 'neutral';
 
-export type NoteStyle = 'classic' | 'midnight' | 'aura' | 'minimal';
+export type NoteStyle = 'classic' | 'midnight' | 'aura' | 'minimal' | 'botanical' | 'cinema' | 'vintage' | 'rose';
 
 export type Mood = 'anxious' | 'sad' | 'grateful' | 'tired' | 'confused' | 'neutral';
 
