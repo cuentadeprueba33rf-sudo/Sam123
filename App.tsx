@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Menu as MenuIcon, Instagram, Heart, RefreshCcw, Copy, Camera, PenTool, Palette } from 'lucide-react';
-import { Note, Gender, NoteStyle } from './types';
+import { Menu as MenuIcon, Instagram, Heart, Brain, Copy, Camera, PenTool, Palette } from 'lucide-react';
+import { Note, Gender, NoteStyle, Mood } from './types';
 import { generateDailyNote } from './services/geminiService';
 import NoteCard from './components/NoteCard';
 import Menu from './components/Menu';
 import Onboarding from './components/Onboarding';
 import CreateNoteModal from './components/CreateNoteModal';
+import MoodSelector from './components/MoodSelector';
 
 // Declare html2canvas globally since it's loaded via CDN
 declare global {
@@ -23,10 +24,11 @@ const App: React.FC = () => {
   const [screenshotMode, setScreenshotMode] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   
-  // New states for Gender & Custom Notes
+  // New states for Gender, Mood & Custom Notes
   const [gender, setGender] = useState<Gender | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [showMoodSelector, setShowMoodSelector] = useState(false);
 
   // Initial Load
   useEffect(() => {
@@ -36,8 +38,8 @@ const App: React.FC = () => {
       
       if (savedGender) {
         setGender(savedGender);
-        // Generate first note with saved gender
-        const note = await generateDailyNote(savedGender);
+        // Generate first note with default mood
+        const note = await generateDailyNote(savedGender, 'neutral');
         setCurrentNote(note);
         setIsLoading(false);
       } else {
@@ -69,16 +71,17 @@ const App: React.FC = () => {
     setGender(selectedGender);
     setShowOnboarding(false);
     setIsLoading(true);
-    // Generate first note immediately after selection
-    const note = await generateDailyNote(selectedGender);
+    // Generate first note
+    const note = await generateDailyNote(selectedGender, 'neutral');
     setCurrentNote(note);
     setIsLoading(false);
   };
 
-  const handleNewNote = async () => {
+  const handleMoodSelect = async (mood: Mood) => {
+    setShowMoodSelector(false);
     if (!gender) return;
     setIsLoading(true);
-    const note = await generateDailyNote(gender);
+    const note = await generateDailyNote(gender, mood);
     setCurrentNote(note);
     setIsLoading(false);
   };
@@ -187,6 +190,9 @@ const App: React.FC = () => {
     >
       {/* Onboarding Overlay */}
       {showOnboarding && <Onboarding onComplete={handleGenderSelect} />}
+      
+      {/* Mood Selector Overlay */}
+      {showMoodSelector && <MoodSelector onSelect={handleMoodSelect} onClose={() => setShowMoodSelector(false)} />}
 
       {/* Create Note Modal */}
       <CreateNoteModal 
@@ -214,7 +220,7 @@ const App: React.FC = () => {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-96">
             <div className={`w-12 h-12 border-4 border-t-current rounded-full animate-spin mb-4 ${currentNote?.style === 'midnight' ? 'border-stone-700 text-white' : 'border-stone-200 text-ink'}`}></div>
-            <p className={`font-serif animate-pulse ${currentNote?.style === 'midnight' ? 'text-stone-400' : 'text-stone-400'}`}>Sintonizando vibra...</p>
+            <p className={`font-serif animate-pulse ${currentNote?.style === 'midnight' ? 'text-stone-400' : 'text-stone-400'}`}>Sintonizando con tu energía...</p>
           </div>
         ) : (
           currentNote && <NoteCard note={currentNote} viewMode={screenshotMode || isGeneratingImage} />
@@ -242,11 +248,11 @@ const App: React.FC = () => {
       <div className={`fixed bottom-0 w-full p-8 pb-12 flex justify-center items-end gap-6 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-y-20 pointer-events-none' : 'opacity-100'}`}>
         
         <button 
-          onClick={(e) => { e.stopPropagation(); handleNewNote(); }}
+          onClick={(e) => { e.stopPropagation(); setShowMoodSelector(true); }}
           className="group p-4 bg-white shadow-lg rounded-full hover:bg-stone-50 transition-all active:scale-95"
-          title="Nueva Nota del Universo"
+          title="Sintonizar Emoción"
         >
-          <RefreshCcw className="w-6 h-6 text-ink group-hover:rotate-180 transition-transform duration-500" />
+          <Brain className="w-6 h-6 text-ink group-hover:text-purple-600 transition-colors" />
         </button>
 
         {/* Instagram Share Button */}
@@ -310,7 +316,7 @@ const App: React.FC = () => {
         onClose={() => setIsMenuOpen(false)} 
         savedNotes={savedNotes}
         onSelectNote={setCurrentNote}
-        onGenerateNew={handleNewNote}
+        onGenerateNew={() => setShowMoodSelector(true)} 
         onCreateOwn={() => setIsCreateModalOpen(true)}
       />
 

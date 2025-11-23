@@ -2,6 +2,8 @@ export type Gender = 'female' | 'male' | 'neutral';
 
 export type NoteStyle = 'classic' | 'midnight' | 'aura' | 'minimal';
 
+export type Mood = 'anxious' | 'sad' | 'grateful' | 'tired' | 'confused' | 'neutral';
+
 export interface Note {
   id: string;
   content: string;

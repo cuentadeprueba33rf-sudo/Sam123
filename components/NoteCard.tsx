@@ -1,5 +1,5 @@
 import React from 'react';
-import { Note, NoteStyle } from '../types';
+import { Note } from '../types';
 import { Quote, Sparkles, Moon, Sun } from 'lucide-react';
 
 interface NoteCardProps {
@@ -9,6 +9,16 @@ interface NoteCardProps {
 
 const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode }) => {
   
+  // Calculate dynamic font size based on text length
+  const getDynamicFontSize = (text: string) => {
+    const len = text.length;
+    if (len < 40) return 'text-4xl md:text-5xl leading-tight'; // Very short
+    if (len < 80) return 'text-3xl md:text-4xl leading-snug'; // Medium
+    return 'text-2xl md:text-3xl leading-snug'; // Long
+  };
+
+  const fontSizeClass = getDynamicFontSize(note.content);
+
   // --- CLASSIC STYLE ---
   const renderClassic = () => {
      const getThemeStyles = (theme: string) => {
@@ -28,7 +38,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode }) => {
           <Quote className="w-8 h-8 rotate-180" />
         </div>
         <div className="relative z-10 space-y-6 my-auto">
-          <h1 className="font-serif text-3xl md:text-4xl leading-snug text-ink font-medium tracking-tight text-pretty drop-shadow-sm">
+          <h1 className={`font-serif ${fontSizeClass} text-ink font-medium tracking-tight text-pretty drop-shadow-sm transition-all duration-300`}>
             {note.content}
           </h1>
         </div>
@@ -38,7 +48,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode }) => {
             {note.author}
           </p>
         </div>
-        {/* Paper Texture */}
+        {/* Paper Texture - Using Internal SVG to avoid CORS/Blank Image issues */}
         <div 
           className="absolute inset-0 opacity-20 pointer-events-none"
           style={{
@@ -62,7 +72,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode }) => {
         <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent pointer-events-none"></div>
 
         <div className="relative z-10 space-y-6 my-auto">
-          <h1 className="font-serif text-3xl md:text-4xl leading-snug text-stone-100 font-light tracking-wide text-pretty drop-shadow-lg">
+          <h1 className={`font-serif ${fontSizeClass} text-stone-100 font-light tracking-wide text-pretty drop-shadow-lg transition-all duration-300`}>
             "{note.content}"
           </h1>
         </div>
@@ -72,7 +82,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode }) => {
           </p>
         </div>
         
-        {/* Grain - mix-blend removed for screenshot compatibility */}
+        {/* Grain */}
          <div 
           className="absolute inset-0 opacity-5 pointer-events-none"
           style={{
@@ -101,7 +111,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode }) => {
         <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/30 rounded-full blur-3xl transform translate-x-10 translate-y-10"></div>
 
         <div className="relative z-10 space-y-6 my-auto">
-          <h1 className="font-serif text-3xl md:text-4xl leading-snug text-ink/80 italic font-medium tracking-tight text-pretty">
+          <h1 className={`font-serif ${fontSizeClass} text-ink/80 italic font-medium tracking-tight text-pretty transition-all duration-300`}>
             {note.content}
           </h1>
         </div>
@@ -137,7 +147,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode }) => {
         </div>
 
         <div className="my-auto">
-          <h1 className="font-sans text-3xl md:text-4xl font-bold leading-tight text-ink tracking-tight text-pretty">
+          <h1 className={`font-sans ${fontSizeClass} font-bold text-ink tracking-tight text-pretty transition-all duration-300`}>
             {note.content}
           </h1>
         </div>
