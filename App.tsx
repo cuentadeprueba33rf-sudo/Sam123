@@ -118,23 +118,25 @@ const App: React.FC = () => {
     });
   };
 
-  // Function to share specifically to Instagram Stories (via native share sheet)
+  // Optimized specifically for Instagram Stories (9:16 format)
   const handleInstagramShare = async () => {
-    const element = document.getElementById('note-card-capture');
+    const element = document.getElementById('story-capture-stage');
     if (!element || !window.html2canvas) return;
 
     setIsGeneratingImage(true);
 
-    // Slight delay to ensure any rendering changes have applied
+    // Slight delay to ensure any rendering changes have applied in the hidden DOM
     setTimeout(async () => {
       try {
-        // 1. Generate Image from DOM
+        // 1. Generate Image from the specific 1080x1920 stage
         const canvas = await window.html2canvas(element, {
-          scale: 3, // High resolution
-          backgroundColor: null, // Transparent to respect styles
+          scale: 1, // Already 1080x1920
+          backgroundColor: null, 
           logging: false,
-          useCORS: true, // To handle external images
+          useCORS: true, 
           allowTaint: true,
+          width: 1080,
+          height: 1920
         });
 
         // 2. Convert to Blob
@@ -145,15 +147,14 @@ const App: React.FC = () => {
           }
 
           // 3. Create File
-          const file = new File([blob], "nota-del-alma.png", { type: "image/png" });
+          const file = new File([blob], "story-nota-del-alma.png", { type: "image/png" });
 
-          // 4. Share using Web Share API
+          // 4. Share using Web Share API - Minimal options to encourage Direct Share
           if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
             try {
               await navigator.share({
-                files: [file],
-                title: 'Nota del Alma', 
-                text: '✨'
+                files: [file]
+                // Omitting text/title sometimes forces OS to treat it as a pure image share, cleaner UI
               });
             } catch (err) {
               console.log('Share cancelled or failed', err);
@@ -161,7 +162,7 @@ const App: React.FC = () => {
           } else {
             // Fallback: Download the image if sharing not supported (Desktop)
             const link = document.createElement('a');
-            link.download = 'nota-del-alma.png';
+            link.download = 'story-nota-del-alma.png';
             link.href = canvas.toDataURL('image/png');
             link.click();
             alert("Imagen guardada. Ahora puedes subirla a tus historias manualmente.");
@@ -188,6 +189,45 @@ const App: React.FC = () => {
         transition: 'background-color 0.5s ease'
       }}
     >
+      {/* --- HIDDEN STORY STAGE (1080x1920) --- */}
+      {/* This renders off-screen and is used exclusively for generating the Instagram Story image */}
+      {currentNote && (
+        <div 
+          id="story-capture-stage"
+          style={{
+            position: 'fixed',
+            top: '0',
+            left: '-9999px',
+            width: '1080px',
+            height: '1920px',
+            zIndex: -1,
+            backgroundColor: currentNote.style === 'midnight' ? '#0f1115' : '#F0EFEB',
+            backgroundImage: currentNote.style !== 'midnight' 
+              ? `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`
+              : 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '40px'
+          }}
+        >
+          {/* We scale the note card by 2x to fit nicely in 1080p width (approx 896px width) */}
+          <div className="scale-[2.2] transform origin-center shadow-2xl">
+            <NoteCard note={currentNote} viewMode={true} />
+          </div>
+          
+          <div className="absolute bottom-40 text-center opacity-70">
+            <p className={`font-serif text-4xl italic tracking-wider ${currentNote.style === 'midnight' ? 'text-white' : 'text-stone-800'}`}>
+              Notas del Alma
+            </p>
+            <p className={`font-sans text-xl uppercase tracking-[0.3em] mt-4 ${currentNote.style === 'midnight' ? 'text-stone-500' : 'text-stone-400'}`}>
+              @notasdelalma
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Onboarding Overlay */}
       {showOnboarding && <Onboarding onComplete={handleGenderSelect} />}
       
@@ -232,7 +272,7 @@ const App: React.FC = () => {
         <div className="fixed inset-0 bg-ink/50 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4 animate-fade-in">
             <div className="w-8 h-8 border-4 border-stone-200 border-t-ink rounded-full animate-spin"></div>
-            <p className="font-sans text-sm text-ink font-medium">Preparando tu historia...</p>
+            <p className="font-sans text-sm text-ink font-medium">Creando Historia...</p>
           </div>
         </div>
       )}
@@ -263,7 +303,7 @@ const App: React.FC = () => {
         >
            <Instagram className="w-8 h-8" />
            <span className="absolute -top-12 left-1/2 -translate-x-1/2 bg-ink text-white text-[10px] px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-sans pointer-events-none shadow-sm">
-             Compartir a Historia
+             Historia
            </span>
         </button>
 

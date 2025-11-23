@@ -5,9 +5,11 @@ import { Quote, Sparkles, Moon, Sun } from 'lucide-react';
 interface NoteCardProps {
   note: Note;
   viewMode: boolean; // If true, hides hints to look good in screenshots
+  className?: string;
+  id?: string;
 }
 
-const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode }) => {
+const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id }) => {
   
   // Calculate dynamic font size based on text length
   const getDynamicFontSize = (text: string) => {
@@ -48,7 +50,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode }) => {
             {note.author}
           </p>
         </div>
-        {/* Paper Texture - Using Internal SVG to avoid CORS/Blank Image issues */}
+        {/* Paper Texture */}
         <div 
           className="absolute inset-0 opacity-20 pointer-events-none"
           style={{
@@ -172,9 +174,9 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode }) => {
   };
 
   return (
-    <div className="relative w-full max-w-md mx-auto perspective-1000">
+    <div className={`relative w-full max-w-md mx-auto perspective-1000 ${className}`}>
       <div 
-        id="note-card-capture" 
+        id={id}
         className={`
         relative 
         aspect-[4/5] 
