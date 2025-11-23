@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Note, Gender, NoteStyle, Mood, ExtractionResult } from "../types";
 
-const API_KEY = 'AIzaSyBHdYTVWfwOc1gTn4y4SVYfnE54RBSWEN0';
+const API_KEY = 'AIzaSyD7XyzwMKSHYnyLqU--z5fp20oM9_en1rc';
 
 // Expanded Fallback notes to prevent repetition if API fails
 const FALLBACK_NOTES: Note[] = [
