@@ -146,15 +146,16 @@ const App: React.FC = () => {
             return;
           }
 
-          // 3. Create File
-          const file = new File([blob], "story-nota-del-alma.png", { type: "image/png" });
+          // 3. Create File with specific name to help OS identify context
+          const file = new File([blob], "instagram-story.png", { type: "image/png" });
 
-          // 4. Share using Web Share API - Minimal options to encourage Direct Share
+          // 4. Share using Web Share API - Optimized for "Image Only"
           if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
             try {
+              // We intentionally OMIT text and url to force the OS to treat this as a photo share
+              // This often filters out non-visual apps and prioritizes Instagram/Photos
               await navigator.share({
                 files: [file]
-                // Omitting text/title sometimes forces OS to treat it as a pure image share, cleaner UI
               });
             } catch (err) {
               console.log('Share cancelled or failed', err);
@@ -162,10 +163,10 @@ const App: React.FC = () => {
           } else {
             // Fallback: Download the image if sharing not supported (Desktop)
             const link = document.createElement('a');
-            link.download = 'story-nota-del-alma.png';
+            link.download = 'instagram-story.png';
             link.href = canvas.toDataURL('image/png');
             link.click();
-            alert("Imagen guardada. Ahora puedes subirla a tus historias manualmente.");
+            alert("Imagen guardada. Abre Instagram y súbela a tu historia.");
           }
           setIsGeneratingImage(false);
         }, 'image/png', 1.0); // Max quality
@@ -272,7 +273,7 @@ const App: React.FC = () => {
         <div className="fixed inset-0 bg-ink/50 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4 animate-fade-in">
             <div className="w-8 h-8 border-4 border-stone-200 border-t-ink rounded-full animate-spin"></div>
-            <p className="font-sans text-sm text-ink font-medium">Creando Historia...</p>
+            <p className="font-sans text-sm text-ink font-medium">Abriendo Instagram...</p>
           </div>
         </div>
       )}
