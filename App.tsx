@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Menu as MenuIcon, Instagram, Heart, Brain, Copy, Eye, PenTool, Palette, Download, Sparkles } from 'lucide-react';
+import { Menu as MenuIcon, Instagram, Heart, Brain, Eye, PenTool, Palette, Download, Sparkles, Command } from 'lucide-react';
 import { Note, Gender, NoteStyle, Mood, AppBackground } from './types';
 import { generateDailyNote } from './services/geminiService';
 import NoteCard from './components/NoteCard';
@@ -9,6 +9,7 @@ import Onboarding from './components/Onboarding';
 import CreateNoteModal from './components/CreateNoteModal';
 import MoodSelector from './components/MoodSelector';
 import QualityEnhancer from './components/QualityEnhancer';
+import AIInstructionsModal from './components/AIInstructionsModal';
 
 // Declare html2canvas globally since it's loaded via CDN
 declare global {
@@ -81,7 +82,6 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [screenshotMode, setScreenshotMode] = useState(false);
-  const [copySuccess, setCopySuccess] = useState(false);
   
   // New states for Gender, Mood, Custom Notes & Background
   const [gender, setGender] = useState<Gender | null>(null);
@@ -91,6 +91,10 @@ const App: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showMoodSelector, setShowMoodSelector] = useState(false);
   const [isEnhancerOpen, setIsEnhancerOpen] = useState(false);
+  
+  // AI Instructions State
+  const [aiInstruction, setAiInstruction] = useState<string>('');
+  const [isAIInstructionModalOpen, setIsAIInstructionModalOpen] = useState(false);
   
   // Splash Screen State
   const [isSplashVisible, setIsSplashVisible] = useState(true);
@@ -113,10 +117,14 @@ const App: React.FC = () => {
       const savedMood = localStorage.getItem('user_mood') as Mood | null;
       if (savedMood) setCurrentMood(savedMood);
 
+      // Load saved AI instruction
+      const savedInstruction = localStorage.getItem('ai_instruction');
+      if (savedInstruction) setAiInstruction(savedInstruction);
+
       if (savedGender) {
         setGender(savedGender);
         // Generate first note with saved or default mood
-        const note = await generateDailyNote(savedGender, savedMood || 'neutral');
+        const note = await generateDailyNote(savedGender, savedMood || 'neutral', savedInstruction || '');
         setCurrentNote(note);
         setIsLoading(false);
       } else {
@@ -155,7 +163,7 @@ const App: React.FC = () => {
     setShowOnboarding(false);
     setIsLoading(true);
     // Generate first note
-    const note = await generateDailyNote(selectedGender, currentMood);
+    const note = await generateDailyNote(selectedGender, currentMood, aiInstruction);
     setCurrentNote(note);
     setIsLoading(false);
   };
@@ -172,15 +180,25 @@ const App: React.FC = () => {
     
     if (!gender) return;
     setIsLoading(true);
-    const note = await generateDailyNote(gender, mood);
+    const note = await generateDailyNote(gender, mood, aiInstruction);
     setCurrentNote(note);
     setIsLoading(false);
+  };
+
+  const handleAIInstructionSave = (instruction: string) => {
+    setAiInstruction(instruction);
+    localStorage.setItem('ai_instruction', instruction);
+    // Optionally trigger regeneration if instruction changed and it's not empty
+    if (instruction && gender) {
+        handleGenerateNew();
+    }
   };
 
   const handleGenerateNew = async () => {
     if (!gender) return;
     setIsLoading(true);
-    const note = await generateDailyNote(gender, currentMood);
+    // Pass current aiInstruction
+    const note = await generateDailyNote(gender, currentMood, aiInstruction);
     setCurrentNote(note);
     setIsLoading(false);
   };
@@ -218,15 +236,6 @@ const App: React.FC = () => {
     setCurrentNote({
       ...currentNote,
       style: styles[nextIndex]
-    });
-  };
-
-  const handleCopyText = () => {
-    if (!currentNote) return;
-    const text = `"${currentNote.content}" — ${currentNote.author}`;
-    navigator.clipboard.writeText(text).then(() => {
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
     });
   };
 
@@ -432,6 +441,12 @@ const App: React.FC = () => {
       {showMoodSelector && !isSplashVisible && <MoodSelector onSelect={handleMoodSelect} onClose={() => setShowMoodSelector(false)} />}
       <CreateNoteModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onCreate={handleCreateOwnNote} />
       <QualityEnhancer isOpen={isEnhancerOpen} onClose={() => setIsEnhancerOpen(false)} onRestorationComplete={handleRestorationComplete} />
+      <AIInstructionsModal 
+        isOpen={isAIInstructionModalOpen} 
+        onClose={() => setIsAIInstructionModalOpen(false)} 
+        currentInstruction={aiInstruction}
+        onSave={handleAIInstructionSave}
+      />
 
       {/* Header / Nav - Hidden in Screenshot Mode */}
       <nav className={`fixed top-0 w-full p-6 flex justify-between items-center z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 -translate-y-10 pointer-events-none' : 'opacity-100'}`}>
@@ -543,11 +558,11 @@ const App: React.FC = () => {
          </button>
 
          <button 
-           onClick={(e) => { e.stopPropagation(); handleCopyText(); }}
-           className="p-3 bg-white/80 backdrop-blur shadow-sm rounded-full text-stone-500 hover:text-ink hover:bg-white hover:shadow-md transition-all duration-300 active:scale-90"
-           title="Copiar texto"
+           onClick={(e) => { e.stopPropagation(); setIsAIInstructionModalOpen(true); }}
+           className={`p-3 bg-white/80 backdrop-blur shadow-sm rounded-full hover:text-ink hover:bg-white hover:shadow-md transition-all duration-300 active:scale-90 ${aiInstruction ? 'text-purple-600 ring-2 ring-purple-200' : 'text-stone-500'}`}
+           title="Instrucciones a la IA"
          >
-            {copySuccess ? <span className="text-xs font-bold text-green-600">OK</span> : <Copy className="w-5 h-5" />}
+            <Command className="w-5 h-5" />
          </button>
 
          <button 

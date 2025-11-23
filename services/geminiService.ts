@@ -18,7 +18,11 @@ const ERROR_NOTE: Note = {
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
-export const generateDailyNote = async (gender: Gender = 'female', mood: Mood = 'neutral'): Promise<Note> => {
+export const generateDailyNote = async (
+  gender: Gender = 'female', 
+  mood: Mood = 'neutral',
+  customInstruction: string = ''
+): Promise<Note> => {
   
   if (!API_KEY) {
     console.warn("API Key not found.");
@@ -47,6 +51,17 @@ export const generateDailyNote = async (gender: Gender = 'female', mood: Mood = 
       default: moodContext = "Estado normal. Nota inspiradora general.";
     }
 
+    // Handle Custom Instruction Priority
+    let customInstructionContext = "";
+    if (customInstruction && customInstruction.trim() !== "") {
+      customInstructionContext = `
+        🚨 INSTRUCCIÓN DEL USUARIO (PRIORIDAD MÁXIMA):
+        El usuario ha pedido explícitamente: "${customInstruction}".
+        IMPORTANTE: Si esta instrucción contradice al estado de ánimo, IGNORA el estado de ánimo y obedece esta instrucción.
+        Adapta el tono y el contenido al 100% a lo que pide el usuario aquí.
+      `;
+    }
+
     // Add Random Seed to Prompt to prevent caching/repetition
     const randomSeed = Math.random().toString(36).substring(7);
 
@@ -56,9 +71,10 @@ export const generateDailyNote = async (gender: Gender = 'female', mood: Mood = 
       CONTEXTO:
       - Género: ${genderContext}
       - ESTADO DE ÁNIMO: ${moodContext}
+      ${customInstructionContext}
       - FACTOR ALEATORIO: ${randomSeed} (Usa esto para variar tu respuesta y no repetir frases anteriores).
 
-      TU OBJETIVO: Generar una frase corta, impactante y sanadora para ese estado de ánimo específico.
+      TU OBJETIVO: Generar una frase corta, impactante y sanadora.
 
       REGLAS DE ORO (ESTRICTAS):
       1. PROHIBIDO usar vocativos repetitivos como "amiga", "amigo", "hermana". Habla directamente a la situación.
