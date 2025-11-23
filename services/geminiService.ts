@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Note, Gender, NoteStyle, Mood, ExtractionResult } from "../types";
 
-const API_KEY = 'AIzaSyAhS6_pKwTh_kwxlItVnY9WZmK7W--vTVI';
+const API_KEY = 'AIzaSyDxbOZeDJbjZHueoc3inI7aPmFWvrZ3MOs';
 
 // Colección de respaldo eliminada a petición del usuario.
 // Se define una única nota de error técnico para manejar fallos de conexión.
