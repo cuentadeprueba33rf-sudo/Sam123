@@ -33,9 +33,9 @@ export const generateDailyNote = async (
     // Define gender context
     let genderContext = "";
     if (gender === 'female') {
-      genderContext = "La usuaria es MUJER. Adjetivos femeninos obligatorios (ej: 'cansada', 'valiosa').";
+      genderContext = "La usuaria es MUJER. Adjetivos femeninos obligatorios (ej: 'cansada', 'valiosa', 'decidida').";
     } else if (gender === 'male') {
-      genderContext = "El usuario es HOMBRE. Adjetivos masculinos obligatorios (ej: 'cansado', 'valioso').";
+      genderContext = "El usuario es HOMBRE. Adjetivos masculinos obligatorios (ej: 'cansado', 'valioso', 'decidido').";
     } else {
       genderContext = "Neutro.";
     }
@@ -43,12 +43,12 @@ export const generateDailyNote = async (
     // Define mood context
     let moodContext = "";
     switch (mood) {
-      case 'anxious': moodContext = "El usuario siente ANSIEDAD. La nota debe ser calmante, sobre respirar, soltar el control y confiar."; break;
-      case 'sad': moodContext = "El usuario siente TRISTEZA. La nota debe ser un abrazo, validar el dolor pero dar esperanza suave."; break;
-      case 'grateful': moodContext = "El usuario siente GRATITUD. La nota debe potenciar esa energía y multiplicarla."; break;
-      case 'tired': moodContext = "El usuario siente AGOTAMIENTO. La nota debe recordarle que descansar es productivo y no rendirse."; break;
-      case 'confused': moodContext = "El usuario siente CONFUSIÓN. La nota debe ofrecer claridad, enfoque y dirección simple."; break;
-      default: moodContext = "Estado normal. Nota inspiradora general.";
+      case 'anxious': moodContext = "El usuario siente ANSIEDAD. Necesita leer algo que le de paz inmediata. Calma, respirar, todo estará bien."; break;
+      case 'sad': moodContext = "El usuario siente TRISTEZA. Necesita un abrazo en palabras. Validar el dolor pero recordar que pasará."; break;
+      case 'grateful': moodContext = "El usuario siente GRATITUD. Potencia esa energía positiva."; break;
+      case 'tired': moodContext = "El usuario siente AGOTAMIENTO. Recuérdale que descansar no es rendirse."; break;
+      case 'confused': moodContext = "El usuario siente CONFUSIÓN. Dale una verdad clara y directa. Sin rodeos."; break;
+      default: moodContext = "Estado normal. Un consejo de vida útil y bonito.";
     }
 
     // Handle Custom Instruction Priority
@@ -66,45 +66,46 @@ export const generateDailyNote = async (
     const randomSeed = Math.random().toString(36).substring(7);
 
     const prompt = `
-      Actúa como una voz sabia, 'aesthetic' y profunda (tipo consejera del alma o "el universo hablando").
-      
+      Actúa como una mejor amiga sabia, una hermana mayor o esa voz interior que te dice la verdad con amor.
+
       CONTEXTO:
       - Género: ${genderContext}
       - ESTADO DE ÁNIMO: ${moodContext}
       ${customInstructionContext}
-      - FACTOR ALEATORIO: ${randomSeed} (Usa esto para variar tu respuesta y no repetir frases anteriores).
+      - FACTOR ALEATORIO: ${randomSeed}
 
-      TU OBJETIVO: Generar una frase corta, impactante y sanadora.
+      TU OBJETIVO: Generar una frase corta, emocional y MUY FÁCIL DE ENTENDER.
 
       REGLAS DE ORO (ESTRICTAS):
-      1. PROHIBIDO usar vocativos repetitivos como "amiga", "amigo", "hermana". Habla directamente a la situación.
-      2. CERO palabras rebuscadas. Lenguaje natural y moderno.
-      3. VIBRA: Minimalista, profunda, directa al corazón.
+      1. 🚫 CERO FILOSOFÍA COMPLEJA: No uses palabras raras, ni metáforas abstractas sobre el cosmos o el éter que nadie entiende.
+      2. LENGUAJE SENCILLO: Habla como habla la gente normal en redes sociales. Directo al corazón y a la realidad.
+      3. TEMAS: Amor propio, fe (Dios), sanar relaciones, soltar lo que duele, y realidad pura.
+      4. NO EXCESO DE "AMIGA": No repitas "amiga" o "amigo" en cada frase (suena falso). Habla de tú a tú.
       
-      BALANCE DE TEMAS:
-      - Mezcla psicología ("date cuenta") con espiritualidad ("Dios/Universo").
-      
-      EJEMPLOS DE ESTILO (NO LOS COPIES LITERALMENTE, CREA NUEVOS):
-      - "No elijas a cualquiera, elige a esa persona que ore por ti."
-      - "El mundo gira alrededor del sol, no alrededor de sus comentarios."
-      - "Si te hace dudar de tu valor, ahí no es."
-      - "Deja de intentar sanar en el mismo lugar donde te enfermaste."
+      EJEMPLOS DEL ESTILO QUE BUSCO (Directos y Claros):
+      - "Si te hace dudar, ahí no es."
+      - "No le pidas a Dios que te lo devuelva, pídele que te sane."
+      - "Llora lo que tengas que llorar, y luego levántate."
+      - "El interés se nota, y el desinterés se nota más."
+      - "Tu paz mental no es negociable."
+      - "No guardes luto por alguien que sigue vivo pero eligió no estar."
+      - "Recuerda que cada tormenta tiene su final."
 
-      Longitud: Máximo 25 palabras. Conciso.
+      Longitud: Máximo 20-25 palabras. Corto, contundente y estético.
     `;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
       config: {
-        systemInstruction: "Eres una fuente de inspiración visual. Generas frases cortas y únicas cada vez.",
-        temperature: 1.3, // High temperature for maximum variety
+        systemInstruction: "Eres una consejera emocional directa y clara. Evitas el lenguaje complicado.",
+        temperature: 1.4, // High temperature for simpler, more varied, less robotic responses
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
             content: { type: Type.STRING },
-            author: { type: Type.STRING, description: "Firma corta estética ej: 'Nota Mental', 'Universo', 'Dios contigo'" },
+            author: { type: Type.STRING, description: "Firma corta estética ej: 'Nota Mental', 'Universo', 'Dios contigo', 'Tu corazón'" },
             theme: { type: Type.STRING, enum: ['hope', 'courage', 'love', 'peace'] }
           },
           required: ['content', 'author', 'theme']
