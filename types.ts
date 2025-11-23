@@ -5,6 +5,8 @@ export type NoteStyle = 'classic' | 'midnight' | 'aura' | 'minimal' | 'botanical
 
 export type Mood = 'anxious' | 'sad' | 'grateful' | 'tired' | 'confused' | 'neutral';
 
+export type AppBackground = 'auto' | 'light' | 'dark' | 'aura';
+
 export interface Note {
   id: string;
   content: string;
@@ -17,4 +19,5 @@ export interface Note {
 export interface UserSettings {
   gender: Gender | null;
   hasOnboarded: boolean;
+  appBackground: AppBackground;
 }

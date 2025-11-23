@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Menu as MenuIcon, Instagram, Heart, Brain, Copy, Camera, PenTool, Palette } from 'lucide-react';
-import { Note, Gender, NoteStyle, Mood } from './types';
+import { Menu as MenuIcon, Instagram, Heart, Brain, Copy, Eye, PenTool, Palette, Download } from 'lucide-react';
+import { Note, Gender, NoteStyle, Mood, AppBackground } from './types';
 import { generateDailyNote } from './services/geminiService';
 import NoteCard from './components/NoteCard';
 import Menu from './components/Menu';
@@ -57,8 +57,9 @@ const App: React.FC = () => {
   const [screenshotMode, setScreenshotMode] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   
-  // New states for Gender, Mood & Custom Notes
+  // New states for Gender, Mood, Custom Notes & Background
   const [gender, setGender] = useState<Gender | null>(null);
+  const [appBackground, setAppBackground] = useState<AppBackground>('auto');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showMoodSelector, setShowMoodSelector] = useState(false);
@@ -90,6 +91,12 @@ const App: React.FC = () => {
           console.error("Error parsing saved notes", e);
         }
       }
+
+      // Load Background preference
+      const savedBg = localStorage.getItem('app_background') as AppBackground | null;
+      if (savedBg) {
+        setAppBackground(savedBg);
+      }
     };
     loadInitialData();
   }, []);
@@ -108,6 +115,11 @@ const App: React.FC = () => {
     const note = await generateDailyNote(selectedGender, 'neutral');
     setCurrentNote(note);
     setIsLoading(false);
+  };
+
+  const handleBackgroundChange = (bg: AppBackground) => {
+    setAppBackground(bg);
+    localStorage.setItem('app_background', bg);
   };
 
   const handleMoodSelect = async (mood: Mood) => {
@@ -213,10 +225,43 @@ const App: React.FC = () => {
     }, 100);
   };
 
+  // New function to just download the image without sharing intent
+  const handleDownloadImage = async () => {
+    const element = document.getElementById('story-capture-stage');
+    if (!element || !window.html2canvas) return;
+
+    setIsGeneratingImage(true);
+
+    setTimeout(async () => {
+      try {
+        const canvas = await window.html2canvas(element, {
+          scale: 1, // 1080x1920
+          backgroundColor: null,
+          logging: false,
+          useCORS: true,
+          allowTaint: true,
+          width: 1080,
+          height: 1920
+        });
+
+        const link = document.createElement('a');
+        link.download = `nota-del-alma-${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        setIsGeneratingImage(false);
+      } catch (error) {
+        console.error("Error downloading image", error);
+        setIsGeneratingImage(false);
+        alert("Hubo un problema al guardar la imagen.");
+      }
+    }, 100);
+  };
+
   const isSaved = currentNote ? savedNotes.some(n => n.id === currentNote.id) : false;
 
-  // Determine background color based on style
-  const getBackgroundColor = (style?: NoteStyle) => {
+  // Determine AUTOMATIC background color based on note style
+  const getAutoBackgroundColor = (style?: NoteStyle) => {
     switch(style) {
       case 'midnight': return '#0f1115';
       case 'cinema': return '#1a1a1a';
@@ -227,17 +272,53 @@ const App: React.FC = () => {
     }
   };
 
+  // Determine ACTUAL background color based on User Preference + Note Style (if auto)
+  const getFinalBackgroundColor = () => {
+    if (appBackground === 'light') return '#FDFBF7';
+    if (appBackground === 'dark') return '#0f1115';
+    // For 'aura', we handle it via style/class later, but return a base color here
+    if (appBackground === 'aura') return '#F3E5F5'; 
+    
+    // Default to Auto logic
+    return getAutoBackgroundColor(currentNote?.style);
+  };
+
+  const getBackgroundClass = () => {
+    if (appBackground === 'aura') return 'bg-gradient-to-br from-rose-100 via-purple-100 to-blue-100';
+    return '';
+  };
+
+  // Helper to determine if UI text should be light or dark based on background
+  const isDarkBg = () => {
+    if (appBackground === 'dark') return true;
+    if (appBackground === 'auto' && (currentNote?.style === 'midnight' || currentNote?.style === 'cinema')) return true;
+    return false;
+  };
+
+  const uiTextColor = isDarkBg() ? 'text-white' : 'text-ink';
+  const uiBgHover = isDarkBg() ? 'hover:bg-white/10' : 'hover:bg-stone-50';
+
   return (
     <div 
-      className={`min-h-screen w-full relative flex flex-col items-center justify-center transition-colors duration-500 ${screenshotMode ? 'bg-stone-100 cursor-zoom-out' : ''}`}
+      className={`min-h-screen w-full relative flex flex-col items-center justify-center transition-all duration-500 ${screenshotMode ? 'cursor-zoom-out' : ''} ${getBackgroundClass()}`}
       onClick={() => setScreenshotMode(false)}
       style={{
-        backgroundColor: getBackgroundColor(currentNote?.style),
-        transition: 'background-color 0.5s ease'
+        backgroundColor: appBackground !== 'aura' ? getFinalBackgroundColor() : undefined,
       }}
     >
+      {/* Texture Overlay (Noise) - Only for non-dark themes to avoid muddy blacks */}
+      {!isDarkBg() && (
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-30 z-0"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E")`
+          }}
+        />
+      )}
+
       {/* --- HIDDEN STORY STAGE (1080x1920) --- */}
-      {/* This renders off-screen and is used exclusively for generating the Instagram Story image */}
+      {/* The Story export always respects the NOTE's native style (Auto) for consistency, unless user strongly prefers otherwise? 
+          For now, keeping it Auto-matched ensures the card looks "correct" in the story. */}
       {currentNote && (
         <div 
           id="story-capture-stage"
@@ -248,7 +329,7 @@ const App: React.FC = () => {
             width: '1080px',
             height: '1920px',
             zIndex: -1,
-            backgroundColor: getBackgroundColor(currentNote.style),
+            backgroundColor: getAutoBackgroundColor(currentNote.style), // Always match note style for Stories
             backgroundImage: (!['midnight', 'cinema'].includes(currentNote.style))
               ? `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`
               : 'none',
@@ -291,19 +372,19 @@ const App: React.FC = () => {
       {/* Header / Nav - Hidden in Screenshot Mode */}
       <nav className={`fixed top-0 w-full p-6 flex justify-between items-center z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 -translate-y-10 pointer-events-none' : 'opacity-100'}`}>
         <div className="flex items-center gap-2">
-           <div className={`w-2 h-2 rounded-full animate-pulse ${['midnight', 'cinema'].includes(currentNote?.style || '') ? 'bg-white' : 'bg-ink'}`}></div>
-           <span className={`font-serif italic text-lg ${['midnight', 'cinema'].includes(currentNote?.style || '') ? 'text-white' : 'text-ink'}`}>Notas del Alma</span>
+           <div className={`w-2 h-2 rounded-full animate-pulse ${isDarkBg() ? 'bg-white' : 'bg-ink'}`}></div>
+           <span className={`font-serif italic text-lg ${uiTextColor}`}>Notas del Alma</span>
         </div>
         <button 
           onClick={(e) => { e.stopPropagation(); setIsMenuOpen(true); }}
-          className={`p-2 rounded-full transition-colors ${['midnight', 'cinema'].includes(currentNote?.style || '') ? 'hover:bg-white/10 text-white' : 'hover:bg-white/50 text-ink'}`}
+          className={`p-2 rounded-full transition-colors ${uiTextColor} ${isDarkBg() ? 'hover:bg-white/10' : 'hover:bg-ink/5'}`}
         >
           <MenuIcon className="w-6 h-6" />
         </button>
       </nav>
 
       {/* Main Content Area */}
-      <main className={`w-full max-w-xl px-4 transition-all duration-500 ${screenshotMode ? 'scale-105' : 'scale-100'}`}>
+      <main className={`w-full max-w-xl px-4 z-10 transition-all duration-500 ${screenshotMode ? 'scale-105' : 'scale-100'}`}>
         {isLoading ? (
           <BreathingLoader />
         ) : (
@@ -316,15 +397,17 @@ const App: React.FC = () => {
         <div className="fixed inset-0 bg-ink/50 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4 animate-fade-in">
             <div className="w-8 h-8 border-4 border-stone-200 border-t-ink rounded-full animate-spin"></div>
-            <p className="font-sans text-sm text-ink font-medium">Abriendo Instagram...</p>
+            <p className="font-sans text-sm text-ink font-medium">Preparando recuerdo...</p>
           </div>
         </div>
       )}
 
       {/* Helper text for Screenshot Mode */}
       {screenshotMode && (
-        <div className="fixed bottom-10 text-stone-400 font-sans text-xs uppercase tracking-widest animate-pulse">
-          Toca cualquier lugar para salir
+        <div className="fixed top-24 left-0 w-full text-center z-40 pointer-events-none animate-pulse">
+          <p className="inline-block bg-black/50 text-white px-4 py-2 rounded-full font-sans text-xs uppercase tracking-widest backdrop-blur-md">
+            Toca la pantalla para salir
+          </p>
         </div>
       )}
 
@@ -333,7 +416,7 @@ const App: React.FC = () => {
         
         <button 
           onClick={(e) => { e.stopPropagation(); setShowMoodSelector(true); }}
-          className="group p-4 bg-white shadow-lg rounded-full hover:bg-stone-50 transition-all active:scale-95"
+          className={`group p-4 bg-white shadow-lg rounded-full transition-all active:scale-95 ${uiBgHover}`}
           title="Sintonizar Emoción"
         >
           <Brain className="w-6 h-6 text-ink group-hover:text-purple-600 transition-colors" />
@@ -353,7 +436,7 @@ const App: React.FC = () => {
 
         <button 
           onClick={(e) => { e.stopPropagation(); handleSaveNote(); }}
-          className="group p-4 bg-white shadow-lg rounded-full hover:bg-stone-50 transition-all active:scale-95"
+          className={`group p-4 bg-white shadow-lg rounded-full transition-all active:scale-95 ${uiBgHover}`}
           title="Guardar en favoritos"
         >
           <Heart className={`w-6 h-6 transition-colors ${isSaved ? 'fill-rose-400 text-rose-400' : 'text-ink'}`} />
@@ -362,7 +445,15 @@ const App: React.FC = () => {
       </div>
 
       {/* Secondary Tools (Copy & Create) */}
-      <div className={`fixed right-6 bottom-32 flex flex-col gap-4 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100'}`}>
+      <div className={`fixed right-6 bottom-32 flex flex-col gap-4 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100'}`}>
+         <button 
+           onClick={(e) => { e.stopPropagation(); handleDownloadImage(); }}
+           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all"
+           title="Descargar imagen"
+         >
+            <Download className="w-5 h-5" />
+         </button>
+
          <button 
            onClick={(e) => { e.stopPropagation(); handleCycleStyle(); }}
            className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all group"
@@ -390,7 +481,7 @@ const App: React.FC = () => {
             className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all"
             title="Modo limpio"
          >
-            <Camera className="w-5 h-5" />
+            <Eye className="w-5 h-5" />
          </button>
       </div>
 
@@ -402,6 +493,8 @@ const App: React.FC = () => {
         onSelectNote={setCurrentNote}
         onGenerateNew={() => setShowMoodSelector(true)} 
         onCreateOwn={() => setIsCreateModalOpen(true)}
+        currentBackground={appBackground}
+        onSetBackground={handleBackgroundChange}
       />
 
     </div>

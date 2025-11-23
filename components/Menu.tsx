@@ -1,6 +1,6 @@
 import React from 'react';
-import { X, Heart, Clock, Sparkles, PenTool } from 'lucide-react';
-import { Note } from '../types';
+import { X, Heart, Clock, Sparkles, PenTool, LayoutTemplate } from 'lucide-react';
+import { Note, AppBackground } from '../types';
 
 interface MenuProps {
   isOpen: boolean;
@@ -9,9 +9,28 @@ interface MenuProps {
   onSelectNote: (note: Note) => void;
   onGenerateNew: () => void;
   onCreateOwn: () => void;
+  currentBackground: AppBackground;
+  onSetBackground: (bg: AppBackground) => void;
 }
 
-const Menu: React.FC<MenuProps> = ({ isOpen, onClose, savedNotes, onSelectNote, onGenerateNew, onCreateOwn }) => {
+const Menu: React.FC<MenuProps> = ({ 
+  isOpen, 
+  onClose, 
+  savedNotes, 
+  onSelectNote, 
+  onGenerateNew, 
+  onCreateOwn,
+  currentBackground,
+  onSetBackground
+}) => {
+  
+  const backgrounds: { id: AppBackground; label: string; class: string }[] = [
+    { id: 'auto', label: 'Magia', class: 'bg-gradient-to-br from-stone-100 to-stone-200 border-stone-300' },
+    { id: 'light', label: 'Luz', class: 'bg-[#FDFBF7] border-stone-200' },
+    { id: 'dark', label: 'Noche', class: 'bg-[#0f1115] border-stone-700 text-white' },
+    { id: 'aura', label: 'Aura', class: 'bg-gradient-to-br from-rose-100 to-blue-100 border-white' },
+  ];
+
   return (
     <>
       {/* Backdrop */}
@@ -23,13 +42,14 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose, savedNotes, onSelectNote, 
       {/* Drawer */}
       <div className={`fixed right-0 top-0 h-full w-80 bg-paper shadow-2xl z-50 transform transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="p-6 h-full flex flex-col">
-          <div className="flex justify-between items-center mb-8 border-b border-stone-200 pb-4">
+          <div className="flex justify-between items-center mb-6 border-b border-stone-200 pb-4">
             <h2 className="font-serif text-2xl text-ink italic">Mis Tesoros</h2>
             <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded-full transition-colors">
               <X className="w-6 h-6 text-ink/60" />
             </button>
           </div>
 
+          {/* Actions */}
           <div className="mb-6 space-y-3">
             <button 
               onClick={() => {
@@ -54,11 +74,41 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose, savedNotes, onSelectNote, 
             </button>
           </div>
 
+          {/* Background Selector */}
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-3 text-stone-400">
+              <LayoutTemplate className="w-4 h-4" />
+              <span className="font-sans text-xs uppercase tracking-wider">Atmósfera</span>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {backgrounds.map((bg) => (
+                <button
+                  key={bg.id}
+                  onClick={() => onSetBackground(bg.id)}
+                  className={`flex flex-col items-center gap-2 group`}
+                >
+                  <div className={`w-12 h-12 rounded-full border-2 shadow-sm transition-all ${bg.class} ${currentBackground === bg.id ? 'ring-2 ring-offset-2 ring-ink scale-105' : 'opacity-70 group-hover:opacity-100'}`}>
+                    {bg.id === 'auto' && (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Sparkles className="w-4 h-4 text-stone-400" />
+                      </div>
+                    )}
+                  </div>
+                  <span className={`text-[9px] font-sans uppercase tracking-widest ${currentBackground === bg.id ? 'text-ink font-bold' : 'text-stone-400'}`}>
+                    {bg.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Saved List */}
           <div className="flex-1 overflow-y-auto hide-scrollbar space-y-4">
+            <h3 className="font-sans text-xs uppercase tracking-wider text-stone-400 mb-2">Guardadas</h3>
             {savedNotes.length === 0 ? (
-              <div className="text-center text-stone-400 mt-10">
-                <Heart className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                <p className="font-serif italic">Aún no has guardado ninguna nota.</p>
+              <div className="text-center text-stone-400 mt-4">
+                <Heart className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                <p className="font-serif italic text-sm">Tu colección está vacía.</p>
               </div>
             ) : (
               savedNotes.map((note) => (
