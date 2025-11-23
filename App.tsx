@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu as MenuIcon, Instagram, Heart, Brain, Eye, PenTool, Palette, Download, Sparkles, Command } from 'lucide-react';
 import { Note, Gender, NoteStyle, Mood, AppBackground } from './types';
-import { generateDailyNote } from './services/geminiService';
+import { generateDailyNote, getRandomFallbackNote } from './services/geminiService';
 import NoteCard from './components/NoteCard';
 import Menu from './components/Menu';
 import Onboarding from './components/Onboarding';
@@ -284,6 +284,13 @@ const App: React.FC = () => {
     setIsLoading(false);
   };
 
+  // Generate a note from the backup collection (Manual fallback)
+  const handleGetFallbackNote = () => {
+    const note = getRandomFallbackNote();
+    setCurrentNote(note);
+    // Note: We do NOT increment usage for fallback notes as they are offline/free content.
+  };
+
   const handleOpenEnhancer = () => {
     if (!checkAiLimit()) return;
     setIsEnhancerOpen(true);
@@ -321,6 +328,15 @@ const App: React.FC = () => {
       style: styles[nextIndex]
     });
   };
+
+  // Directly set a specific style from the Menu Templates
+  const handleSelectStyle = (style: NoteStyle) => {
+    if (!currentNote) return;
+    setCurrentNote({
+        ...currentNote,
+        style: style
+    });
+  }
 
   // Optimized specifically for Instagram Stories (9:16 format)
   const handleInstagramShare = async () => {
@@ -667,6 +683,8 @@ const App: React.FC = () => {
         onGenerateNew={() => setShowMoodSelector(true)} 
         onCreateOwn={() => setIsCreateModalOpen(true)}
         onOpenEnhancer={handleOpenEnhancer}
+        onGetFallbackNote={handleGetFallbackNote}
+        onSelectStyle={handleSelectStyle}
         currentBackground={appBackground}
         onSetBackground={handleBackgroundChange}
       />

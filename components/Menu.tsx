@@ -1,6 +1,7 @@
+
 import React from 'react';
-import { X, Heart, Clock, Sparkles, PenTool, LayoutTemplate, Wand2 } from 'lucide-react';
-import { Note, AppBackground } from '../types';
+import { X, Heart, Clock, Sparkles, PenTool, LayoutTemplate, Wand2, BookOpen, Layout } from 'lucide-react';
+import { Note, AppBackground, NoteStyle } from '../types';
 
 interface MenuProps {
   isOpen: boolean;
@@ -10,6 +11,8 @@ interface MenuProps {
   onGenerateNew: () => void;
   onCreateOwn: () => void;
   onOpenEnhancer: () => void;
+  onGetFallbackNote: () => void;
+  onSelectStyle: (style: NoteStyle) => void;
   currentBackground: AppBackground;
   onSetBackground: (bg: AppBackground) => void;
 }
@@ -22,6 +25,8 @@ const Menu: React.FC<MenuProps> = ({
   onGenerateNew, 
   onCreateOwn,
   onOpenEnhancer,
+  onGetFallbackNote,
+  onSelectStyle,
   currentBackground,
   onSetBackground
 }) => {
@@ -33,6 +38,17 @@ const Menu: React.FC<MenuProps> = ({
     { id: 'aura', label: 'Aura', class: 'bg-gradient-to-br from-rose-100 to-blue-100 border-white' },
   ];
 
+  const styles: { id: NoteStyle; label: string; class: string }[] = [
+    { id: 'classic', label: 'Clásico', class: 'bg-[#FDFBF7] border-stone-300' },
+    { id: 'midnight', label: 'Noche', class: 'bg-slate-800 border-slate-600 text-white' },
+    { id: 'aura', label: 'Aura', class: 'bg-gradient-to-br from-purple-100 to-blue-100 border-purple-200' },
+    { id: 'minimal', label: 'Minimal', class: 'bg-gray-100 border-gray-200 font-bold' },
+    { id: 'botanical', label: 'Botánica', class: 'bg-[#F3F6F3] border-[#8FBC8F] text-[#2F4F4F]' },
+    { id: 'cinema', label: 'Cine', class: 'bg-black border-stone-700 text-white' },
+    { id: 'vintage', label: 'Retro', class: 'bg-[#F5F1E6] border-[#8B4513]' },
+    { id: 'rose', label: 'Rose', class: 'bg-[#FFF0F5] border-pink-200' },
+  ];
+
   return (
     <>
       {/* Backdrop */}
@@ -42,10 +58,10 @@ const Menu: React.FC<MenuProps> = ({
       />
 
       {/* Drawer */}
-      <div className={`fixed right-0 top-0 h-full w-80 bg-paper shadow-2xl z-50 transform transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="p-6 h-full flex flex-col">
+      <div className={`fixed right-0 top-0 h-full w-80 bg-paper shadow-2xl z-50 transform transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto hide-scrollbar`}>
+        <div className="p-6 min-h-full flex flex-col">
           <div className="flex justify-between items-center mb-6 border-b border-stone-200 pb-4">
-            <h2 className="font-serif text-2xl text-ink italic">Mis Tesoros</h2>
+            <h2 className="font-serif text-2xl text-ink italic">Herramientas</h2>
             <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded-full transition-colors">
               <X className="w-6 h-6 text-ink/60" />
             </button>
@@ -61,9 +77,20 @@ const Menu: React.FC<MenuProps> = ({
               className="w-full flex items-center justify-center gap-2 bg-ink text-paper py-3 rounded-lg font-sans text-xs uppercase tracking-widest hover:bg-ink/90 transition-all active:scale-95"
             >
               <Sparkles className="w-4 h-4" />
-              Pedir al Universo
+              Pedir al Universo (IA)
             </button>
             
+            <button 
+              onClick={() => {
+                onGetFallbackNote();
+                onClose();
+              }}
+              className="w-full flex items-center justify-center gap-2 bg-amber-50 text-amber-900 border border-amber-200 py-3 rounded-lg font-sans text-xs uppercase tracking-widest hover:bg-amber-100 transition-all active:scale-95"
+            >
+              <BookOpen className="w-4 h-4" />
+              Mensaje de la Colección
+            </button>
+
             <button 
               onClick={() => {
                 onCreateOwn();
@@ -85,6 +112,29 @@ const Menu: React.FC<MenuProps> = ({
               <Wand2 className="w-4 h-4" />
               Mejorar Calidad (IA)
             </button>
+          </div>
+
+          {/* Templates Selector */}
+          <div className="mb-6">
+             <div className="flex items-center gap-2 mb-3 text-stone-400">
+              <Layout className="w-4 h-4" />
+              <span className="font-sans text-xs uppercase tracking-wider">Galería de Plantillas</span>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {styles.map((style) => (
+                <button
+                  key={style.id}
+                  onClick={() => {
+                    onSelectStyle(style.id);
+                    onClose();
+                  }}
+                  className={`h-12 rounded-md border flex items-center justify-center transition-all shadow-sm hover:scale-105 ${style.class}`}
+                  title={style.label}
+                >
+                  <span className="text-[8px] font-sans uppercase truncate px-1">{style.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Background Selector */}
@@ -116,7 +166,7 @@ const Menu: React.FC<MenuProps> = ({
           </div>
 
           {/* Saved List */}
-          <div className="flex-1 overflow-y-auto hide-scrollbar space-y-4">
+          <div className="flex-1">
             <h3 className="font-sans text-xs uppercase tracking-wider text-stone-400 mb-2">Guardadas</h3>
             {savedNotes.length === 0 ? (
               <div className="text-center text-stone-400 mt-4">
@@ -124,31 +174,33 @@ const Menu: React.FC<MenuProps> = ({
                 <p className="font-serif italic text-sm">Tu colección está vacía.</p>
               </div>
             ) : (
-              savedNotes.map((note) => (
-                <div 
-                  key={note.id} 
-                  onClick={() => {
-                    onSelectNote(note);
-                    onClose();
-                  }}
-                  className="p-4 bg-white border border-stone-100 shadow-sm rounded-xl cursor-pointer hover:shadow-md transition-all hover:-translate-y-1 group"
-                >
-                  <p className="font-serif text-ink/80 text-lg leading-snug line-clamp-3 mb-2 group-hover:text-ink">
-                    "{note.content}"
-                  </p>
-                  <div className="flex justify-between items-center text-xs text-stone-400 font-sans uppercase tracking-wider">
-                    <span>{note.author}</span>
-                    <span className="flex items-center gap-1">
-                       <Clock className="w-3 h-3" />
-                       {new Date(note.timestamp).toLocaleDateString()}
-                    </span>
+              <div className="space-y-4">
+                {savedNotes.map((note) => (
+                  <div 
+                    key={note.id} 
+                    onClick={() => {
+                      onSelectNote(note);
+                      onClose();
+                    }}
+                    className="p-4 bg-white border border-stone-100 shadow-sm rounded-xl cursor-pointer hover:shadow-md transition-all hover:-translate-y-1 group"
+                  >
+                    <p className="font-serif text-ink/80 text-lg leading-snug line-clamp-3 mb-2 group-hover:text-ink">
+                      "{note.content}"
+                    </p>
+                    <div className="flex justify-between items-center text-xs text-stone-400 font-sans uppercase tracking-wider">
+                      <span>{note.author}</span>
+                      <span className="flex items-center gap-1">
+                         <Clock className="w-3 h-3" />
+                         {new Date(note.timestamp).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
           
-          <div className="mt-auto pt-6 text-center">
+          <div className="mt-6 pt-6 border-t border-stone-100 text-center pb-4">
             <p className="font-serif text-xs text-stone-300 italic">Hecho con amor para ti</p>
           </div>
         </div>
