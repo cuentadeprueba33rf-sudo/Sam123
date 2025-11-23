@@ -7,6 +7,7 @@ import Menu from './components/Menu';
 import Onboarding from './components/Onboarding';
 import CreateNoteModal from './components/CreateNoteModal';
 import MoodSelector from './components/MoodSelector';
+import QualityEnhancer from './components/QualityEnhancer';
 
 // Declare html2canvas globally since it's loaded via CDN
 declare global {
@@ -87,6 +88,7 @@ const App: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showMoodSelector, setShowMoodSelector] = useState(false);
+  const [isEnhancerOpen, setIsEnhancerOpen] = useState(false);
   
   // Splash Screen State
   const [isSplashVisible, setIsSplashVisible] = useState(true);
@@ -168,6 +170,18 @@ const App: React.FC = () => {
 
   const handleCreateOwnNote = (note: Note) => {
     setCurrentNote(note);
+  };
+
+  const handleRestorationComplete = (note: Note) => {
+    setCurrentNote(note);
+    // Optionally auto-save restored notes
+    if (!savedNotes.find(n => n.content === note.content)) {
+       setSavedNotes([note, ...savedNotes]);
+    }
+    // Trigger download immediately for UX "Magic" feeling
+    setTimeout(() => {
+       handleDownloadImage();
+    }, 1000);
   };
 
   const handleSaveNote = () => {
@@ -355,8 +369,6 @@ const App: React.FC = () => {
       )}
 
       {/* --- HIDDEN STORY STAGE (1080x1920) --- */}
-      {/* The Story export always respects the NOTE's native style (Auto) for consistency, unless user strongly prefers otherwise? 
-          For now, keeping it Auto-matched ensures the card looks "correct" in the story. */}
       {currentNote && (
         <div 
           id="story-capture-stage"
@@ -367,7 +379,7 @@ const App: React.FC = () => {
             width: '1080px',
             height: '1920px',
             zIndex: -1,
-            backgroundColor: getAutoBackgroundColor(currentNote.style), // Always match note style for Stories
+            backgroundColor: getAutoBackgroundColor(currentNote.style), 
             backgroundImage: (!['midnight', 'cinema'].includes(currentNote.style))
               ? `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`
               : 'none',
@@ -378,7 +390,7 @@ const App: React.FC = () => {
             padding: '40px'
           }}
         >
-          {/* We scale the note card by 2x to fit nicely in 1080p width (approx 896px width) */}
+          {/* Scaled for export */}
           <div className="scale-[2.2] transform origin-center shadow-2xl">
             <NoteCard note={currentNote} viewMode={true} />
           </div>
@@ -394,18 +406,11 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Onboarding Overlay */}
+      {/* Overlays */}
       {showOnboarding && !isSplashVisible && <Onboarding onComplete={handleGenderSelect} />}
-      
-      {/* Mood Selector Overlay */}
       {showMoodSelector && !isSplashVisible && <MoodSelector onSelect={handleMoodSelect} onClose={() => setShowMoodSelector(false)} />}
-
-      {/* Create Note Modal */}
-      <CreateNoteModal 
-        isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
-        onCreate={handleCreateOwnNote} 
-      />
+      <CreateNoteModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onCreate={handleCreateOwnNote} />
+      <QualityEnhancer isOpen={isEnhancerOpen} onClose={() => setIsEnhancerOpen(false)} onRestorationComplete={handleRestorationComplete} />
 
       {/* Header / Nav - Hidden in Screenshot Mode */}
       <nav className={`fixed top-0 w-full p-6 flex justify-between items-center z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 -translate-y-10 pointer-events-none' : 'opacity-100'}`}>
@@ -422,7 +427,7 @@ const App: React.FC = () => {
       </nav>
 
       {/* Main Content Area */}
-      <main className={`w-full max-w-xl px-4 z-10 transition-all duration-500 ${screenshotMode ? 'scale-105' : 'scale-100'}`}>
+      <main className={`w-full max-w-xl px-4 z-10 transition-all duration-500 flex flex-col justify-center items-center ${screenshotMode ? 'scale-105' : 'scale-100'}`}>
         {isLoading ? (
           <BreathingLoader />
         ) : (
@@ -449,24 +454,24 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Controls - Hidden in Screenshot Mode */}
-      <div className={`fixed bottom-0 w-full p-8 pb-12 flex justify-center items-end gap-6 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-y-20 pointer-events-none' : 'opacity-100'}`}>
+      {/* Controls - Optimized for Mobile (Bottom Bar) */}
+      <div className={`fixed bottom-0 w-full p-4 md:p-8 md:pb-12 flex justify-center items-end gap-4 md:gap-6 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-y-20 pointer-events-none' : 'opacity-100'}`}>
         
         <button 
           onClick={(e) => { e.stopPropagation(); setShowMoodSelector(true); }}
-          className={`group p-4 bg-white shadow-lg rounded-full transition-all active:scale-95 ${uiBgHover}`}
+          className={`group p-3 md:p-4 bg-white shadow-lg rounded-full transition-all active:scale-95 ${uiBgHover}`}
           title="Sintonizar Emoción"
         >
-          <Brain className="w-6 h-6 text-ink group-hover:text-purple-600 transition-colors" />
+          <Brain className="w-5 h-5 md:w-6 md:h-6 text-ink group-hover:text-purple-600 transition-colors" />
         </button>
 
         {/* Instagram Share Button */}
         <button 
           onClick={(e) => { e.stopPropagation(); handleInstagramShare(); }}
-          className="group relative p-6 bg-gradient-to-tr from-purple-600 via-pink-600 to-orange-500 text-white shadow-xl rounded-full hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center"
+          className="group relative p-5 md:p-6 bg-gradient-to-tr from-purple-600 via-pink-600 to-orange-500 text-white shadow-xl rounded-full hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center mb-2 md:mb-0"
           title="Compartir en Historia"
         >
-           <Instagram className="w-8 h-8" />
+           <Instagram className="w-7 h-7 md:w-8 md:h-8" />
            <span className="absolute -top-12 left-1/2 -translate-x-1/2 bg-ink text-white text-[10px] px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-sans pointer-events-none shadow-sm">
              Historia
            </span>
@@ -474,19 +479,19 @@ const App: React.FC = () => {
 
         <button 
           onClick={(e) => { e.stopPropagation(); handleSaveNote(); }}
-          className={`group p-4 bg-white shadow-lg rounded-full transition-all active:scale-95 ${uiBgHover}`}
+          className={`group p-3 md:p-4 bg-white shadow-lg rounded-full transition-all active:scale-95 ${uiBgHover}`}
           title="Guardar en favoritos"
         >
-          <Heart className={`w-6 h-6 transition-colors ${isSaved ? 'fill-rose-400 text-rose-400' : 'text-ink'}`} />
+          <Heart className={`w-5 h-5 md:w-6 md:h-6 transition-colors ${isSaved ? 'fill-rose-400 text-rose-400' : 'text-ink'}`} />
         </button>
 
       </div>
 
-      {/* Secondary Tools (Copy & Create) */}
-      <div className={`fixed right-6 bottom-32 flex flex-col gap-4 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100'}`}>
+      {/* Secondary Tools (Copy & Create) - Right Side */}
+      <div className={`fixed right-4 md:right-6 bottom-24 md:bottom-32 flex flex-col gap-3 md:gap-4 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100'}`}>
          <button 
            onClick={(e) => { e.stopPropagation(); handleDownloadImage(); }}
-           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all"
+           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all active:scale-90"
            title="Descargar imagen"
          >
             <Download className="w-5 h-5" />
@@ -494,7 +499,7 @@ const App: React.FC = () => {
 
          <button 
            onClick={(e) => { e.stopPropagation(); handleCycleStyle(); }}
-           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all group"
+           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all group active:scale-90"
            title="Cambiar Estilo Visual"
          >
             <Palette className="w-5 h-5 group-hover:rotate-12 transition-transform" />
@@ -502,21 +507,21 @@ const App: React.FC = () => {
 
          <button 
            onClick={(e) => { e.stopPropagation(); setIsCreateModalOpen(true); }}
-           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all"
+           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all active:scale-90"
            title="Escribir mi nota"
          >
             <PenTool className="w-5 h-5" />
          </button>
          <button 
            onClick={(e) => { e.stopPropagation(); handleCopyText(); }}
-           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all"
+           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all active:scale-90"
            title="Copiar texto"
          >
             {copySuccess ? <span className="text-xs font-bold text-green-600">OK</span> : <Copy className="w-5 h-5" />}
          </button>
          <button 
             onClick={(e) => { e.stopPropagation(); setScreenshotMode(true); }}
-            className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all"
+            className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all active:scale-90"
             title="Modo limpio"
          >
             <Eye className="w-5 h-5" />
@@ -531,6 +536,7 @@ const App: React.FC = () => {
         onSelectNote={setCurrentNote}
         onGenerateNew={() => setShowMoodSelector(true)} 
         onCreateOwn={() => setIsCreateModalOpen(true)}
+        onOpenEnhancer={() => setIsEnhancerOpen(true)}
         currentBackground={appBackground}
         onSetBackground={handleBackgroundChange}
       />

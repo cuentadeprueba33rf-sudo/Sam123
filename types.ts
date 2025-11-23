@@ -21,3 +21,14 @@ export interface UserSettings {
   hasOnboarded: boolean;
   appBackground: AppBackground;
 }
+
+export interface ExtractionResult {
+  isValid: boolean;
+  errorReason?: string;
+  note?: {
+    content: string;
+    author: string;
+    theme: 'hope' | 'courage' | 'love' | 'peace';
+    style: NoteStyle;
+  }
+}

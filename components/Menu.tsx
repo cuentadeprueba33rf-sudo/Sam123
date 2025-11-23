@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Heart, Clock, Sparkles, PenTool, LayoutTemplate } from 'lucide-react';
+import { X, Heart, Clock, Sparkles, PenTool, LayoutTemplate, Wand2 } from 'lucide-react';
 import { Note, AppBackground } from '../types';
 
 interface MenuProps {
@@ -9,6 +9,7 @@ interface MenuProps {
   onSelectNote: (note: Note) => void;
   onGenerateNew: () => void;
   onCreateOwn: () => void;
+  onOpenEnhancer: () => void;
   currentBackground: AppBackground;
   onSetBackground: (bg: AppBackground) => void;
 }
@@ -20,6 +21,7 @@ const Menu: React.FC<MenuProps> = ({
   onSelectNote, 
   onGenerateNew, 
   onCreateOwn,
+  onOpenEnhancer,
   currentBackground,
   onSetBackground
 }) => {
@@ -71,6 +73,17 @@ const Menu: React.FC<MenuProps> = ({
             >
               <PenTool className="w-4 h-4" />
               Escribir mi nota
+            </button>
+
+            <button 
+              onClick={() => {
+                onOpenEnhancer();
+                onClose();
+              }}
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-100 text-purple-900 py-3 rounded-lg font-sans text-xs uppercase tracking-widest hover:bg-purple-100 transition-all active:scale-95"
+            >
+              <Wand2 className="w-4 h-4" />
+              Mejorar Calidad (IA)
             </button>
           </div>
 

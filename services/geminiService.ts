@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Note, Gender, NoteStyle, Mood } from "../types";
+import { Note, Gender, NoteStyle, Mood, ExtractionResult } from "../types";
 
 const API_KEY = 'AIzaSyBHdYTVWfwOc1gTn4y4SVYfnE54RBSWEN0';
 
@@ -142,5 +142,87 @@ export const generateDailyNote = async (gender: Gender = 'female', mood: Mood = 
   } catch (error) {
     console.error("Error generating note:", error);
     return FALLBACK_NOTES[Math.floor(Math.random() * FALLBACK_NOTES.length)];
+  }
+};
+
+export const analyzeImageForRestoration = async (base64Image: string): Promise<ExtractionResult> => {
+  try {
+    // 1. Extract dynamic mime type from the base64 header to be robust
+    const mimeMatch = base64Image.match(/^data:(image\/[a-zA-Z+]+);base64,/);
+    const mimeType = mimeMatch ? mimeMatch[1] : "image/png"; 
+    
+    // 2. Clean the base64 string
+    const cleanBase64 = base64Image.replace(/^data:image\/[a-zA-Z+]+;base64,/, "");
+
+    const prompt = `
+      ACTÚA COMO UN CURADOR DE CONTENIDO LITERARIO Y EMOCIONAL.
+
+      TU MISIÓN:
+      Analizar si la imagen contiene un MENSAJE, FRASE, POEMA o CITA que tenga VALOR EMOCIONAL, INSPIRADOR O ESTÉTICO.
+
+      CRITERIOS DE VALIDACIÓN (MUY ESTRICTO - NO ACEPTES TEXTO BASURA):
+      
+      ✅ VÁLIDO (Acepta y extrae):
+      - Frases inspiradoras, tristes, de amor, desamor o motivación.
+      - Capturas de Tweets, Posts de Instagram o Notas de celular que contengan pensamientos profundos.
+      - Poemas, versos o escritos a mano con significado.
+      - Mensajes de chat que sean sentimentales (ej: una confesión, un consejo, una despedida).
+      
+      ❌ INVÁLIDO (Rechaza inmediatamente aunque tenga texto):
+      - Capturas de interfaz de sistema (Menús de Wi-Fi, Batería, Ajustes, Pantalla de inicio).
+      - Tareas escolares, fórmulas matemáticas, cuestionarios o código de programación.
+      - Noticias, artículos periodísticos, publicidad o capturas de bancos.
+      - Conversaciones triviales o funcionales (ej: "¿Dónde estás?", "Compra leche", "Jajaja ok").
+      - Memes vulgares, chistes simples o capturas de videojuegos.
+      - Documentos, facturas o texto puramente informativo.
+
+      SI ES VÁLIDO:
+      1. Extrae el texto completo del mensaje, corrigiendo errores obvios.
+      2. Si hay un autor visible, úsalo. Si no, pon "Anónimo" o deduce uno (ej: "Twitter", "Nota Mental").
+      3. Clasifica el tema (hope, courage, love, peace).
+      4. Sugiere un estilo visual adecuado para el mensaje.
+
+      SI ES INVÁLIDO:
+      - Marca isValid: false.
+      - Explica la razón en 'errorReason' (ej: "Es una captura de un menú de ajustes, no es una frase inspiradora.").
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: {
+        parts: [
+          { inlineData: { mimeType: mimeType, data: cleanBase64 } },
+          { text: prompt }
+        ]
+      },
+      config: {
+        temperature: 0.4, // Low temperature for strict adherence to validation rules
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            isValid: { type: Type.BOOLEAN },
+            errorReason: { type: Type.STRING },
+            note: {
+              type: Type.OBJECT,
+              properties: {
+                content: { type: Type.STRING },
+                author: { type: Type.STRING },
+                theme: { type: Type.STRING, enum: ['hope', 'courage', 'love', 'peace'] },
+                style: { type: Type.STRING, enum: ['classic', 'midnight', 'aura', 'minimal', 'botanical', 'cinema', 'vintage', 'rose'] }
+              }
+            }
+          },
+          required: ['isValid']
+        }
+      }
+    });
+
+    const result = JSON.parse(response.text || '{}');
+    return result as ExtractionResult;
+
+  } catch (error) {
+    console.error("Error analyzing image:", error);
+    return { isValid: false, errorReason: "Error al procesar la imagen. Intenta con otra foto o formato." };
   }
 };
