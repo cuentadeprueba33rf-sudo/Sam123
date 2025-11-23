@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu as MenuIcon, Instagram, Heart, Brain, Copy, Eye, PenTool, Palette, Download } from 'lucide-react';
+import { Menu as MenuIcon, Instagram, Heart, Brain, Copy, Eye, PenTool, Palette, Download, Sparkles } from 'lucide-react';
 import { Note, Gender, NoteStyle, Mood, AppBackground } from './types';
 import { generateDailyNote } from './services/geminiService';
 import NoteCard from './components/NoteCard';
@@ -48,6 +48,30 @@ const BreathingLoader = () => {
   );
 };
 
+// Component: Initial Splash Screen
+const SplashScreen = () => (
+  <div className="fixed inset-0 z-[200] bg-[#F0EFEB] flex flex-col items-center justify-center animate-fade-in">
+    <div 
+      className="absolute inset-0 pointer-events-none opacity-30 z-0"
+      style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E")`
+      }}
+    />
+    <div className="relative z-10 flex flex-col items-center">
+      <div className="mb-6 relative">
+         <div className="absolute inset-0 bg-rose-200 blur-xl opacity-50 animate-pulse rounded-full"></div>
+         <Sparkles className="w-16 h-16 text-ink relative z-10 animate-float" />
+      </div>
+      <p className="font-sans text-xs uppercase tracking-[0.4em] text-stone-500 mb-3 animate-pulse">
+        Powered By
+      </p>
+      <h1 className="font-serif text-5xl text-ink italic tracking-widest drop-shadow-sm">
+        SAM IA
+      </h1>
+    </div>
+  </div>
+);
+
 const App: React.FC = () => {
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
   const [savedNotes, setSavedNotes] = useState<Note[]>([]);
@@ -63,6 +87,17 @@ const App: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showMoodSelector, setShowMoodSelector] = useState(false);
+  
+  // Splash Screen State
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
+
+  // Handle Splash Screen Timer
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsSplashVisible(false);
+    }, 4000); // 4 seconds
+    return () => clearTimeout(timer);
+  }, []);
 
   // Initial Load
   useEffect(() => {
@@ -306,6 +341,9 @@ const App: React.FC = () => {
         backgroundColor: appBackground !== 'aura' ? getFinalBackgroundColor() : undefined,
       }}
     >
+      {/* SPLASH SCREEN */}
+      {isSplashVisible && <SplashScreen />}
+
       {/* Texture Overlay (Noise) - Only for non-dark themes to avoid muddy blacks */}
       {!isDarkBg() && (
         <div 
@@ -357,10 +395,10 @@ const App: React.FC = () => {
       )}
 
       {/* Onboarding Overlay */}
-      {showOnboarding && <Onboarding onComplete={handleGenderSelect} />}
+      {showOnboarding && !isSplashVisible && <Onboarding onComplete={handleGenderSelect} />}
       
       {/* Mood Selector Overlay */}
-      {showMoodSelector && <MoodSelector onSelect={handleMoodSelect} onClose={() => setShowMoodSelector(false)} />}
+      {showMoodSelector && !isSplashVisible && <MoodSelector onSelect={handleMoodSelect} onClose={() => setShowMoodSelector(false)} />}
 
       {/* Create Note Modal */}
       <CreateNoteModal 
