@@ -10,6 +10,7 @@ import CreateNoteModal from './components/CreateNoteModal';
 import MoodSelector from './components/MoodSelector';
 import QualityEnhancer from './components/QualityEnhancer';
 import AIInstructionsModal from './components/AIInstructionsModal';
+import ServiceStatusBanner from './components/ServiceStatusBanner';
 
 // Declare html2canvas globally since it's loaded via CDN
 declare global {
@@ -98,6 +99,9 @@ const App: React.FC = () => {
   
   // Splash Screen State
   const [isSplashVisible, setIsSplashVisible] = useState(true);
+  
+  // Service Warning Banner State
+  const [showServiceBanner, setShowServiceBanner] = useState(true);
 
   // Handle Splash Screen Timer
   useEffect(() => {
@@ -387,6 +391,11 @@ const App: React.FC = () => {
     >
       {/* SPLASH SCREEN */}
       {isSplashVisible && <SplashScreen />}
+      
+      {/* SERVICE WARNING BANNER */}
+      {showServiceBanner && !isSplashVisible && (
+        <ServiceStatusBanner onClose={() => setShowServiceBanner(false)} />
+      )}
 
       {/* Texture Overlay (Noise) - Only for non-dark themes to avoid muddy blacks */}
       {!isDarkBg() && (
