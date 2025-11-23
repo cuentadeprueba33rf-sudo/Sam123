@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Menu as MenuIcon, Instagram, Heart, Brain, Eye, PenTool, Palette, Download, Sparkles, Command } from 'lucide-react';
 import { Note, Gender, NoteStyle, Mood, AppBackground } from './types';
@@ -111,7 +112,7 @@ const App: React.FC = () => {
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
   const [savedNotes, setSavedNotes] = useState<Note[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [screenshotMode, setScreenshotMode] = useState(false);
   
@@ -173,12 +174,8 @@ const App: React.FC = () => {
 
       if (savedGender) {
         setGender(savedGender);
-        // We DO NOT generate automatically anymore.
-        // We just stop loading so the StartScreen can appear.
-        setIsLoading(false);
       } else {
         setShowOnboarding(true);
-        setIsLoading(false);
       }
 
       // Load saved notes
@@ -230,14 +227,15 @@ const App: React.FC = () => {
     
     // For new users, we generate the first note immediately as a welcome
     if (!checkAiLimit()) {
-      setIsLoading(false);
       return; 
     }
 
     setIsLoading(true);
     const note = await generateDailyNote(selectedGender, currentMood, aiInstruction);
     setCurrentNote(note);
-    incrementAiUsage();
+    if (note.isGeneratedByAI) {
+      incrementAiUsage();
+    }
     setIsLoading(false);
   };
 
@@ -258,7 +256,9 @@ const App: React.FC = () => {
     setIsLoading(true);
     const note = await generateDailyNote(gender, mood, aiInstruction);
     setCurrentNote(note);
-    incrementAiUsage();
+    if (note.isGeneratedByAI) {
+      incrementAiUsage();
+    }
     setIsLoading(false);
   };
 
@@ -273,14 +273,19 @@ const App: React.FC = () => {
   };
 
   const handleGenerateNew = async () => {
-    if (!gender) return;
+    if (!gender) {
+      setShowOnboarding(true); // If for some reason gender is not set, show onboarding
+      return;
+    }
     
     if (!checkAiLimit()) return;
 
     setIsLoading(true);
     const note = await generateDailyNote(gender, currentMood, aiInstruction);
     setCurrentNote(note);
-    incrementAiUsage();
+    if (note.isGeneratedByAI) {
+      incrementAiUsage();
+    }
     setIsLoading(false);
   };
 
