@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Menu as MenuIcon, Instagram, Heart, Brain, Copy, Eye, PenTool, Palette, Download, Sparkles } from 'lucide-react';
 import { Note, Gender, NoteStyle, Mood, AppBackground } from './types';
@@ -362,6 +363,10 @@ const App: React.FC = () => {
 
   const uiTextColor = isDarkBg() ? 'text-white' : 'text-ink';
   const uiBgHover = isDarkBg() ? 'hover:bg-white/10' : 'hover:bg-stone-50';
+  
+  // Button Classes
+  const secondaryBtnClass = `group p-3 md:p-4 bg-white shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${uiBgHover}`;
+  const mainBtnClass = `group p-5 bg-white shadow-2xl rounded-full transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl active:scale-90 flex items-center justify-center ring-2 ring-stone-100`;
 
   return (
     <div 
@@ -470,62 +475,60 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Controls - Optimized for Mobile (Bottom Bar) */}
-      <div className={`fixed bottom-0 w-full p-4 md:p-8 md:pb-12 flex justify-center items-end gap-4 md:gap-6 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-y-20 pointer-events-none' : 'opacity-100'}`}>
+      {/* Controls - Optimized Bottom Dock Symmetrical */}
+      <div className={`fixed bottom-6 md:bottom-10 w-full px-4 flex justify-center items-center gap-3 md:gap-6 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-y-20 pointer-events-none' : 'opacity-100'}`}>
         
-        {/* 1. Change Mood Button */}
+        {/* Left Group: Mood & Save */}
         <button 
           onClick={(e) => { e.stopPropagation(); setShowMoodSelector(true); }}
-          className={`group p-3 md:p-4 bg-white shadow-lg rounded-full transition-all active:scale-95 ${uiBgHover}`}
+          className={secondaryBtnClass}
           title="Cambiar estado de ánimo"
         >
-          <Brain className="w-5 h-5 md:w-6 md:h-6 text-stone-400 group-hover:text-purple-600 transition-colors" />
-        </button>
-
-        {/* 2. MAIN GENERATE BUTTON (Use Current Mood) */}
-        <button 
-          onClick={(e) => { e.stopPropagation(); handleGenerateNew(); }}
-          className={`group p-4 md:p-5 bg-white shadow-xl rounded-full transition-all active:scale-95 ${uiBgHover} ring-1 ring-stone-100`}
-          title="Nueva Nota (Mismo Mood)"
-        >
-          <Sparkles className="w-6 h-6 md:w-7 md:h-7 text-ink group-hover:text-gold transition-colors" />
-        </button>
-
-        {/* 3. Instagram Share Button */}
-        <button 
-          onClick={(e) => { e.stopPropagation(); handleInstagramShare(); }}
-          className="group relative p-5 md:p-6 bg-gradient-to-tr from-purple-600 via-pink-600 to-orange-500 text-white shadow-xl rounded-full hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center mb-2 md:mb-0"
-          title="Compartir en Historia"
-        >
-           <Instagram className="w-7 h-7 md:w-8 md:h-8" />
-           <span className="absolute -top-12 left-1/2 -translate-x-1/2 bg-ink text-white text-[10px] px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-sans pointer-events-none shadow-sm">
-             Historia
-           </span>
+          <Brain className="w-5 h-5 text-stone-400 group-hover:text-purple-600 transition-colors" />
         </button>
 
         <button 
           onClick={(e) => { e.stopPropagation(); handleSaveNote(); }}
-          className={`group p-3 md:p-4 bg-white shadow-lg rounded-full transition-all active:scale-95 ${uiBgHover}`}
+          className={secondaryBtnClass}
           title="Guardar en favoritos"
         >
-          <Heart className={`w-5 h-5 md:w-6 md:h-6 transition-colors ${isSaved ? 'fill-rose-400 text-rose-400' : 'text-stone-400 hover:text-rose-400'}`} />
+          <Heart className={`w-5 h-5 transition-colors ${isSaved ? 'fill-rose-400 text-rose-400' : 'text-stone-400 hover:text-rose-400'}`} />
         </button>
+
+        {/* Center Main: Generate */}
+        <button 
+          onClick={(e) => { e.stopPropagation(); handleGenerateNew(); }}
+          className={mainBtnClass}
+          title="Nueva Nota"
+        >
+          <Sparkles className="w-7 h-7 text-ink group-hover:text-gold transition-colors" />
+        </button>
+
+        {/* Right Group: Share & Download */}
+        <button 
+          onClick={(e) => { e.stopPropagation(); handleInstagramShare(); }}
+          className={`group p-3 md:p-4 bg-white shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${uiBgHover}`}
+          title="Compartir en Historia"
+        >
+           <Instagram className="w-5 h-5 text-stone-400 group-hover:text-pink-600 transition-colors" />
+        </button>
+        
+         <button 
+           onClick={(e) => { e.stopPropagation(); handleDownloadImage(); }}
+           className={secondaryBtnClass}
+           title="Descargar imagen"
+         >
+            <Download className="w-5 h-5 text-stone-400 group-hover:text-blue-600 transition-colors" />
+         </button>
 
       </div>
 
-      {/* Secondary Tools (Copy & Create) - Right Side */}
-      <div className={`fixed right-4 md:right-6 bottom-24 md:bottom-32 flex flex-col gap-3 md:gap-4 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100'}`}>
-         <button 
-           onClick={(e) => { e.stopPropagation(); handleDownloadImage(); }}
-           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all active:scale-90"
-           title="Descargar imagen"
-         >
-            <Download className="w-5 h-5" />
-         </button>
+      {/* Secondary Tools (Side Column) - Cleaned up */}
+      <div className={`fixed right-4 md:right-8 bottom-32 md:bottom-36 flex flex-col gap-3 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100'}`}>
 
          <button 
            onClick={(e) => { e.stopPropagation(); handleCycleStyle(); }}
-           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all group active:scale-90"
+           className="p-3 bg-white/80 backdrop-blur shadow-sm rounded-full text-stone-500 hover:text-ink hover:bg-white hover:shadow-md transition-all duration-300 group active:scale-90"
            title="Cambiar Estilo Visual"
          >
             <Palette className="w-5 h-5 group-hover:rotate-12 transition-transform" />
@@ -533,21 +536,23 @@ const App: React.FC = () => {
 
          <button 
            onClick={(e) => { e.stopPropagation(); setIsCreateModalOpen(true); }}
-           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all active:scale-90"
+           className="p-3 bg-white/80 backdrop-blur shadow-sm rounded-full text-stone-500 hover:text-ink hover:bg-white hover:shadow-md transition-all duration-300 active:scale-90"
            title="Escribir mi nota"
          >
             <PenTool className="w-5 h-5" />
          </button>
+
          <button 
            onClick={(e) => { e.stopPropagation(); handleCopyText(); }}
-           className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all active:scale-90"
+           className="p-3 bg-white/80 backdrop-blur shadow-sm rounded-full text-stone-500 hover:text-ink hover:bg-white hover:shadow-md transition-all duration-300 active:scale-90"
            title="Copiar texto"
          >
             {copySuccess ? <span className="text-xs font-bold text-green-600">OK</span> : <Copy className="w-5 h-5" />}
          </button>
+
          <button 
             onClick={(e) => { e.stopPropagation(); setScreenshotMode(true); }}
-            className="p-3 bg-white/80 backdrop-blur shadow-md rounded-full text-stone-600 hover:text-ink hover:bg-white transition-all active:scale-90"
+            className="p-3 bg-white/80 backdrop-blur shadow-sm rounded-full text-stone-500 hover:text-ink hover:bg-white hover:shadow-md transition-all duration-300 active:scale-90"
             title="Modo limpio"
          >
             <Eye className="w-5 h-5" />
