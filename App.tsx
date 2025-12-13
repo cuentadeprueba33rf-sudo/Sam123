@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { Menu as MenuIcon, Copy, Heart, Brain, Eye, PenTool, Palette, Download, Sparkles, Layers, Moon } from 'lucide-react';
-import { Note, Gender, NoteStyle, Mood, AppBackground, AppMode, AppInterfaceTheme } from './types';
+import { Menu as MenuIcon, Copy, Heart, Brain, Eye, PenTool, Palette, Download, Sparkles, Layers, Moon, Flag, Crown } from 'lucide-react';
+import { Note, Gender, NoteStyle, Mood, AppBackground, AppMode, AppInterfaceTheme, FlagType } from './types';
 import { generateDailyNote, getRandomFallbackNote } from './services/geminiService';
 import NoteCard from './components/NoteCard';
 import Menu from './components/Menu';
@@ -67,6 +67,43 @@ const themeConfig = {
     loaderColor: 'bg-white/40 border-pink-200 text-pink-400',
     font: 'font-serif'
   }
+};
+
+// --- VIP FLAG SELECTOR MODAL ---
+const FlagSelectorModal = ({ isOpen, onClose, onSelect, current }: { isOpen: boolean, onClose: () => void, onSelect: (f: FlagType) => void, current: FlagType }) => {
+  if (!isOpen) return null;
+  const flags: {id: FlagType, label: string, gradient: string}[] = [
+     { id: 'none', label: 'Ninguna', gradient: 'bg-gray-100 border' },
+     { id: 'rainbow', label: 'Rainbow', gradient: 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500' },
+     { id: 'bisexual', label: 'Bisexual', gradient: 'bg-gradient-to-r from-pink-600 via-purple-600 to-blue-700' },
+     { id: 'lesbian', label: 'Lesbiana', gradient: 'bg-gradient-to-r from-orange-500 via-white to-pink-600' },
+     { id: 'trans', label: 'Trans', gradient: 'bg-gradient-to-r from-blue-300 via-pink-300 to-white' },
+     { id: 'pan', label: 'Pansexual', gradient: 'bg-gradient-to-r from-pink-500 via-yellow-400 to-blue-400' },
+     { id: 'nonbinary', label: 'No Binario', gradient: 'bg-gradient-to-r from-yellow-400 via-white to-purple-600' },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+       <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+          <h3 className="text-xl font-serif text-center mb-4 text-ink flex items-center justify-center gap-2">
+            <Flag className="w-5 h-5 text-rose-500" /> Banderas de Firma
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+             {flags.map(f => (
+               <button 
+                key={f.id}
+                onClick={() => { onSelect(f.id); onClose(); }}
+                className={`p-3 rounded-xl border-2 transition-all flex items-center gap-3 ${current === f.id ? 'border-ink bg-stone-50' : 'border-transparent hover:bg-stone-50'}`}
+               >
+                 <div className={`w-8 h-8 rounded-full shadow-sm ${f.gradient}`}></div>
+                 <span className="text-sm font-sans font-medium text-stone-600">{f.label}</span>
+               </button>
+             ))}
+          </div>
+          <button onClick={onClose} className="w-full mt-4 py-3 text-sm text-stone-400 font-sans uppercase tracking-widest hover:text-ink">Cerrar</button>
+       </div>
+    </div>
+  );
 };
 
 // Component: Zen Breathing Loader (Themed)
@@ -172,10 +209,12 @@ const App: React.FC = () => {
   
   // User Settings
   const [gender, setGender] = useState<Gender | null>(null);
+  const [username, setUsername] = useState<string | null>(null); // New Username
+  const [userFlag, setUserFlag] = useState<FlagType>('none'); // New Flag Preference
   const [currentMood, setCurrentMood] = useState<Mood>('neutral');
   const [currentMode, setCurrentMode] = useState<AppMode>('neutral');
   const [appBackground, setAppBackground] = useState<AppBackground>('auto');
-  const [interfaceTheme, setInterfaceTheme] = useState<AppInterfaceTheme>('essence'); // New Theme State
+  const [interfaceTheme, setInterfaceTheme] = useState<AppInterfaceTheme>('essence');
   
   // Modals
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -184,6 +223,7 @@ const App: React.FC = () => {
   const [isEnhancerOpen, setIsEnhancerOpen] = useState(false);
   const [isModeSelectorOpen, setIsModeSelectorOpen] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [isFlagModalOpen, setIsFlagModalOpen] = useState(false); // Flag Modal
 
   // Usage Limit State
   const [aiUsageCount, setAiUsageCount] = useState(0);
@@ -193,6 +233,10 @@ const App: React.FC = () => {
   
   // Service Warning Banner State
   const [showServiceBanner, setShowServiceBanner] = useState(true);
+  const [vipWelcomeShown, setVipWelcomeShown] = useState(false); // Track welcome toast
+
+  // VIP Logic
+  const isVIP = username?.toLowerCase() === 'carolina';
 
   // Handle Splash Screen Timer
   useEffect(() => {
@@ -220,6 +264,9 @@ const App: React.FC = () => {
 
       // User Data
       const savedGender = localStorage.getItem('user_gender') as Gender | null;
+      const savedUsername = localStorage.getItem('user_username');
+      const savedFlag = localStorage.getItem('user_flag') as FlagType | null;
+
       const savedMood = localStorage.getItem('user_mood') as Mood | null;
       const savedMode = localStorage.getItem('user_mode') as AppMode | null;
       const savedTheme = localStorage.getItem('interface_theme') as AppInterfaceTheme | null;
@@ -227,9 +274,11 @@ const App: React.FC = () => {
       if (savedMood) setCurrentMood(savedMood);
       if (savedMode) setCurrentMode(savedMode);
       if (savedTheme) setInterfaceTheme(savedTheme);
+      if (savedFlag) setUserFlag(savedFlag);
 
-      if (savedGender) {
+      if (savedGender && savedUsername) {
         setGender(savedGender);
+        setUsername(savedUsername);
       } else {
         setShowOnboarding(true);
       }
@@ -251,6 +300,16 @@ const App: React.FC = () => {
     };
     loadInitialData();
   }, []);
+
+  // VIP Welcome Toast
+  useEffect(() => {
+    if (isVIP && !isSplashVisible && !showOnboarding && !vipWelcomeShown) {
+      setTimeout(() => {
+        alert("✨ Bienvenida Carolina amiga de SAMUEL ✨");
+        setVipWelcomeShown(true);
+      }, 1000);
+    }
+  }, [isVIP, isSplashVisible, showOnboarding, vipWelcomeShown]);
 
   useEffect(() => {
     localStorage.setItem('saved_notes', JSON.stringify(savedNotes));
@@ -274,16 +333,23 @@ const App: React.FC = () => {
     return true;
   };
 
-  const handleGenderSelect = async (selectedGender: Gender) => {
+  // Modified Onboarding Complete
+  const handleOnboardingComplete = async (selectedGender: Gender, name: string) => {
     localStorage.setItem('user_gender', selectedGender);
+    localStorage.setItem('user_username', name);
     setGender(selectedGender);
+    setUsername(name);
     setShowOnboarding(false);
     
+    // Initial generation (if needed)
     if (!checkAiLimit()) return; 
 
     setIsLoading(true);
     const note = await generateDailyNote(selectedGender, currentMood, currentMode);
-    setCurrentNote(note);
+    // Apply flag if exists
+    const noteWithFlag = { ...note, userFlag: (name.toLowerCase() === 'carolina' ? userFlag : 'none') };
+    setCurrentNote(noteWithFlag);
+
     if (note.isGeneratedByAI) {
       incrementAiUsage();
     }
@@ -300,6 +366,16 @@ const App: React.FC = () => {
     localStorage.setItem('interface_theme', theme);
   };
 
+  // Handle Flag Change
+  const handleFlagChange = (flag: FlagType) => {
+    setUserFlag(flag);
+    localStorage.setItem('user_flag', flag);
+    // Update current note if exists
+    if (currentNote) {
+       setCurrentNote({ ...currentNote, userFlag: flag });
+    }
+  };
+
   const handleMoodSelect = async (mood: Mood) => {
     setCurrentMood(mood);
     localStorage.setItem('user_mood', mood);
@@ -310,7 +386,7 @@ const App: React.FC = () => {
 
     setIsLoading(true);
     const note = await generateDailyNote(gender, mood, currentMode);
-    setCurrentNote(note);
+    setCurrentNote({ ...note, userFlag: isVIP ? userFlag : 'none' });
     if (note.isGeneratedByAI) {
       incrementAiUsage();
     }
@@ -321,11 +397,10 @@ const App: React.FC = () => {
     setCurrentMode(mode);
     localStorage.setItem('user_mode', mode);
     
-    // Auto-generate note in new mode context if user has credits
     if (gender && aiUsageCount < MAX_AI_USES) {
         setIsLoading(true);
         const note = await generateDailyNote(gender, currentMood, mode);
-        setCurrentNote(note);
+        setCurrentNote({ ...note, userFlag: isVIP ? userFlag : 'none' });
         if (note.isGeneratedByAI) {
             incrementAiUsage();
         }
@@ -343,7 +418,7 @@ const App: React.FC = () => {
 
     setIsLoading(true);
     const note = await generateDailyNote(gender, currentMood, currentMode);
-    setCurrentNote(note);
+    setCurrentNote({ ...note, userFlag: isVIP ? userFlag : 'none' });
     if (note.isGeneratedByAI) {
       incrementAiUsage();
     }
@@ -352,7 +427,7 @@ const App: React.FC = () => {
 
   const handleGetFallbackNote = () => {
     const note = getRandomFallbackNote();
-    setCurrentNote(note);
+    setCurrentNote({ ...note, userFlag: isVIP ? userFlag : 'none' });
   };
 
   const handleOpenEnhancer = () => {
@@ -361,14 +436,15 @@ const App: React.FC = () => {
   };
 
   const handleCreateOwnNote = (note: Note) => {
-    setCurrentNote(note);
+    setCurrentNote({ ...note, userFlag: isVIP ? userFlag : 'none' });
   };
 
   const handleRestorationComplete = (note: Note) => {
     incrementAiUsage(); 
-    setCurrentNote(note);
-    if (!savedNotes.find(n => n.content === note.content)) {
-       setSavedNotes([note, ...savedNotes]);
+    const finalNote = { ...note, userFlag: isVIP ? userFlag : 'none' };
+    setCurrentNote(finalNote);
+    if (!savedNotes.find(n => n.content === finalNote.content)) {
+       setSavedNotes([finalNote, ...savedNotes]);
     }
     setTimeout(() => {
        handleDownloadImage();
@@ -482,7 +558,7 @@ const App: React.FC = () => {
            setIsCreateModalOpen(true);
         }}
       />
-      {/* FIX: Ensure ModeSelector closes properly by using conditional rendering and a callback wrapper */}
+      
       {isModeSelectorOpen && (
         <ModeSelector 
           currentMode={currentMode}
@@ -490,6 +566,13 @@ const App: React.FC = () => {
           onClose={() => setIsModeSelectorOpen(false)}
         />
       )}
+
+      <FlagSelectorModal 
+        isOpen={isFlagModalOpen}
+        onClose={() => setIsFlagModalOpen(false)}
+        onSelect={handleFlagChange}
+        current={userFlag}
+      />
 
       {/* Texture Overlay (Global) */}
       <div 
@@ -537,7 +620,7 @@ const App: React.FC = () => {
       )}
 
       {/* Overlays */}
-      {showOnboarding && !isSplashVisible && <Onboarding onComplete={handleGenderSelect} />}
+      {showOnboarding && !isSplashVisible && <Onboarding onComplete={handleOnboardingComplete} />}
       {showMoodSelector && !isSplashVisible && <MoodSelector onSelect={handleMoodSelect} onClose={() => setShowMoodSelector(false)} />}
       <CreateNoteModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onCreate={handleCreateOwnNote} />
       <QualityEnhancer isOpen={isEnhancerOpen} onClose={() => setIsEnhancerOpen(false)} onRestorationComplete={handleRestorationComplete} />
@@ -547,6 +630,7 @@ const App: React.FC = () => {
         <div className="flex items-center gap-2">
            <div className={`w-2 h-2 rounded-full animate-pulse bg-current ${activeTheme.text}`}></div>
            <span className={`text-lg ${activeTheme.header} transition-colors duration-500`}>Notas del Alma</span>
+           {isVIP && <Crown className="w-4 h-4 text-amber-400 animate-pulse" title="VIP" />}
            <span className={`ml-2 text-[10px] font-sans opacity-50 px-2 py-0.5 rounded-full ${activeTheme.text} border border-current`}>
              {aiUsageCount}/{MAX_AI_USES}
            </span>
@@ -618,7 +702,6 @@ const App: React.FC = () => {
             <Sparkles className="w-7 h-7" />
           </button>
 
-          {/* REPLACED INSTAGRAM WITH COPY */}
           <button 
             onClick={(e) => { e.stopPropagation(); handleCopyText(); }}
             className={`group p-3 md:p-4 shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${activeTheme.buttonSecondary}`}
@@ -642,6 +725,17 @@ const App: React.FC = () => {
       {currentNote && (
         <div className={`fixed right-4 md:right-8 bottom-32 md:bottom-36 flex flex-col gap-3 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100'}`}>
 
+          {/* VIP ONLY BUTTON */}
+          {isVIP && (
+             <button 
+                onClick={(e) => { e.stopPropagation(); setIsFlagModalOpen(true); }}
+                className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${activeTheme.buttonSecondary} border-rose-200 text-rose-500`}
+                title="Elegir Bandera (VIP)"
+              >
+                  <Flag className="w-5 h-5" />
+              </button>
+          )}
+
           <button 
             onClick={(e) => { e.stopPropagation(); handleCycleStyle(); }}
             className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 group active:scale-90 ${activeTheme.buttonSecondary}`}
@@ -658,7 +752,6 @@ const App: React.FC = () => {
               <PenTool className="w-5 h-5" />
           </button>
 
-          {/* MODE SELECTOR */}
           <button 
             onClick={(e) => { e.stopPropagation(); setIsModeSelectorOpen(true); }}
             className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${activeTheme.buttonSecondary} ${currentMode !== 'neutral' ? 'ring-2 ring-current' : ''}`}

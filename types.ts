@@ -11,6 +11,8 @@ export type AppMode = 'neutral' | 'egocentric' | 'redflags' | 'power';
 
 export type AppInterfaceTheme = 'essence' | 'cosmos' | 'coquette';
 
+export type FlagType = 'none' | 'rainbow' | 'bisexual' | 'lesbian' | 'trans' | 'pan' | 'nonbinary';
+
 export interface Note {
   id: string;
   content: string;
@@ -18,15 +20,18 @@ export interface Note {
   theme: 'hope' | 'courage' | 'love' | 'peace';
   style: NoteStyle;
   timestamp: number;
-  isGeneratedByAI?: boolean; // New flag to distinguish source
+  isGeneratedByAI?: boolean;
+  userFlag?: FlagType; // New: Flag to display in signature
 }
 
 export interface UserSettings {
   gender: Gender | null;
+  username: string | null; // New: Username
   hasOnboarded: boolean;
   appBackground: AppBackground;
   mode: AppMode;
   interfaceTheme: AppInterfaceTheme;
+  preferredFlag: FlagType; // New: Saved flag preference
 }
 
 export interface ExtractionResult {

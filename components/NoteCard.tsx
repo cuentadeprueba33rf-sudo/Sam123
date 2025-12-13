@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { Note } from '../types';
+import { Note, FlagType } from '../types';
 import { Quote, Sparkles, Moon, Star, Leaf, Film, Feather, Heart } from 'lucide-react';
 
 interface NoteCardProps {
@@ -9,6 +9,43 @@ interface NoteCardProps {
   className?: string;
   id?: string;
 }
+
+// Helper to render flags
+const FlagIcon = ({ type, className }: { type?: FlagType, className?: string }) => {
+  if (!type || type === 'none') return null;
+
+  let gradient = '';
+  switch (type) {
+    case 'rainbow': // Traditional Pride
+      gradient = 'linear-gradient(180deg, #FF0018 16.66%, #FFA52C 16.66%, #FFA52C 33.33%, #FFFF41 33.33%, #FFFF41 50%, #008018 50%, #008018 66.66%, #0000F9 66.66%, #0000F9 83.33%, #86007D 83.33%)';
+      break;
+    case 'bisexual':
+      gradient = 'linear-gradient(180deg, #D00070 40%, #8C4799 40%, #8C4799 60%, #0032A0 60%)';
+      break;
+    case 'lesbian':
+      gradient = 'linear-gradient(180deg, #D52D00 20%, #EF7627 20%, #EF7627 40%, #FFFFFF 40%, #FFFFFF 60%, #A30262 60%, #A30262 80%, #D42C00 80%)';
+      break;
+    case 'trans':
+      gradient = 'linear-gradient(180deg, #5BCEFA 20%, #F5A9B8 20%, #F5A9B8 40%, #FFFFFF 40%, #FFFFFF 60%, #F5A9B8 60%, #F5A9B8 80%, #5BCEFA 80%)';
+      break;
+    case 'pan':
+      gradient = 'linear-gradient(180deg, #FF218C 33.33%, #FFD800 33.33%, #FFD800 66.66%, #21B1FF 66.66%)';
+      break;
+    case 'nonbinary':
+      gradient = 'linear-gradient(180deg, #FCF434 25%, #FFFFFF 25%, #FFFFFF 50%, #9C59D1 50%, #9C59D1 75%, #2C2C2C 75%)';
+      break;
+    default:
+      return null;
+  }
+
+  return (
+    <div 
+      className={`inline-block w-6 h-4 rounded-sm shadow-sm border border-black/10 mx-2 align-middle ${className}`}
+      style={{ background: gradient }}
+      title={type}
+    />
+  );
+};
 
 const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id }) => {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -78,9 +115,12 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
         </div>
         <div className="absolute bottom-12 w-full px-12">
           <div className="h-px w-12 bg-gold/30 mx-auto mb-4"></div>
-          <p className="font-sans text-xs uppercase tracking-[0.2em] text-stone-500">
-            {note.author}
-          </p>
+          <div className="flex items-center justify-center">
+            <p className="font-sans text-xs uppercase tracking-[0.2em] text-stone-500">
+              {note.author}
+            </p>
+            <FlagIcon type={note.userFlag} />
+          </div>
         </div>
         <div 
           className="absolute inset-0 opacity-20 pointer-events-none"
@@ -113,9 +153,12 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
              <div className="w-1 h-1 rounded-full bg-white"></div>
              <div className="h-px w-8 bg-white"></div>
           </div>
-          <p className="font-sans text-[10px] uppercase tracking-[0.3em] text-stone-400">
-            {note.author}
-          </p>
+          <div className="flex items-center justify-center">
+             <p className="font-sans text-[10px] uppercase tracking-[0.3em] text-stone-400">
+              {note.author}
+             </p>
+             <FlagIcon type={note.userFlag} />
+          </div>
         </div>
       </div>
     );
@@ -142,10 +185,11 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
               {note.content}
             </h1>
           </div>
-          <div className="mt-8 pt-4 border-t border-white/50 w-full max-w-[120px]">
+          <div className="mt-8 pt-4 border-t border-white/50 w-full max-w-[120px] flex justify-center items-center">
             <p className="font-sans text-[10px] font-bold uppercase tracking-widest text-ink/60">
               {note.author}
             </p>
+            <FlagIcon type={note.userFlag} />
           </div>
         </div>
       </div>
@@ -170,9 +214,12 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
         <div className="w-full flex justify-end items-end">
           <div className="text-right">
              <p className="font-serif italic text-sm text-stone-500 mb-1">written by</p>
-             <p className="font-sans font-bold text-xs uppercase tracking-widest text-black bg-black text-white px-2 py-1 inline-block">
-                {note.author}
-             </p>
+             <div className="flex items-center justify-end gap-2">
+                <FlagIcon type={note.userFlag} />
+                <p className="font-sans font-bold text-xs uppercase tracking-widest text-black bg-black text-white px-2 py-1 inline-block">
+                    {note.author}
+                </p>
+             </div>
           </div>
         </div>
       </div>
@@ -197,10 +244,11 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
         </div>
         
         <div className="absolute bottom-10 w-full flex justify-center">
-           <div className="px-6 py-2 border-t border-b border-[#8FBC8F]/40">
+           <div className="px-6 py-2 border-t border-b border-[#8FBC8F]/40 flex items-center gap-2">
               <p className="font-serif italic text-[#556B2F] text-sm">
                 — {note.author} —
               </p>
+              <FlagIcon type={note.userFlag} />
            </div>
         </div>
         
@@ -239,10 +287,11 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
           </h1>
         </div>
 
-        <div className="relative z-10 mb-20 opacity-70">
+        <div className="relative z-10 mb-20 opacity-70 flex justify-center items-center gap-2">
            <p className="font-sans text-[10px] uppercase tracking-widest text-white/60">
              Directed by {note.author}
            </p>
+           <FlagIcon type={note.userFlag} />
         </div>
       </div>
     );
@@ -264,11 +313,14 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
           </h1>
         </div>
         
-        <div className="absolute bottom-12 w-full">
+        <div className="absolute bottom-12 w-full flex justify-center items-center flex-col">
            <p className="font-serif italic text-[#8B4513] text-sm mb-1 opacity-70">Sinceramente,</p>
-           <p className="font-serif font-bold text-[#5D4037] text-xs uppercase tracking-widest">
-             {note.author}
-           </p>
+           <div className="flex items-center gap-2">
+              <p className="font-serif font-bold text-[#5D4037] text-xs uppercase tracking-widest">
+                {note.author}
+              </p>
+              <FlagIcon type={note.userFlag} />
+           </div>
         </div>
         
         <div 
@@ -299,9 +351,12 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
         
         <div className="absolute bottom-10 w-full">
            <div className="inline-block px-4 py-1 bg-white rounded-full shadow-sm border border-pink-100">
-             <p className="font-serif text-[#C71585] text-xs tracking-wider">
-               con amor, {note.author}
-             </p>
+             <div className="flex items-center gap-2">
+               <p className="font-serif text-[#C71585] text-xs tracking-wider">
+                 con amor, {note.author}
+               </p>
+               <FlagIcon type={note.userFlag} />
+             </div>
            </div>
         </div>
       </div>
