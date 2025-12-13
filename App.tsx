@@ -22,6 +22,8 @@ declare global {
 
 // Constants
 const MAX_AI_USES = 10;
+// VERSION FLAG: Change this string to force a reset on all user devices
+const APP_VERSION = 'v_update_reset_sam_2.0';
 
 // THEME CONFIGURATION OBJECT
 const themeConfig = {
@@ -200,6 +202,7 @@ const StartScreen = ({ onStart, theme }: { onStart: () => void, theme: AppInterf
 };
 
 const App: React.FC = () => {
+  // STATE
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
   const [savedNotes, setSavedNotes] = useState<Note[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -209,8 +212,8 @@ const App: React.FC = () => {
   
   // User Settings
   const [gender, setGender] = useState<Gender | null>(null);
-  const [username, setUsername] = useState<string | null>(null); // New Username
-  const [userFlag, setUserFlag] = useState<FlagType>('none'); // New Flag Preference
+  const [username, setUsername] = useState<string | null>(null);
+  const [userFlag, setUserFlag] = useState<FlagType>('none');
   const [currentMood, setCurrentMood] = useState<Mood>('neutral');
   const [currentMode, setCurrentMode] = useState<AppMode>('neutral');
   const [appBackground, setAppBackground] = useState<AppBackground>('auto');
@@ -223,7 +226,7 @@ const App: React.FC = () => {
   const [isEnhancerOpen, setIsEnhancerOpen] = useState(false);
   const [isModeSelectorOpen, setIsModeSelectorOpen] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  const [isFlagModalOpen, setIsFlagModalOpen] = useState(false); // Flag Modal
+  const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
 
   // Usage Limit State
   const [aiUsageCount, setAiUsageCount] = useState(0);
@@ -233,10 +236,29 @@ const App: React.FC = () => {
   
   // Service Warning Banner State
   const [showServiceBanner, setShowServiceBanner] = useState(true);
-  const [vipWelcomeShown, setVipWelcomeShown] = useState(false); // Track welcome toast
+  const [vipWelcomeShown, setVipWelcomeShown] = useState(false);
 
   // VIP Logic
   const isVIP = username?.toLowerCase() === 'carolina';
+
+  // --- FORCED RESET LOGIC ---
+  useEffect(() => {
+    const checkVersion = () => {
+      const storedVersion = localStorage.getItem('app_version');
+      if (storedVersion !== APP_VERSION) {
+        // Clear all data to force clean slate for new update
+        localStorage.clear();
+        localStorage.setItem('app_version', APP_VERSION);
+        
+        // Show the requested message
+        alert("Esto es un restablecimiento forzoso para aplicar cambios de la actualización nueva que ha llegado.\n\nATT: SAM");
+        
+        // Reload page to apply clean state logic
+        window.location.reload();
+      }
+    };
+    checkVersion();
+  }, []);
 
   // Handle Splash Screen Timer
   useEffect(() => {
