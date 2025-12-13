@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { X, Heart, Clock, Sparkles, PenTool, LayoutTemplate, Wand2, BookOpen, Layout } from 'lucide-react';
 import { Note, AppBackground, NoteStyle } from '../types';
@@ -78,17 +79,6 @@ const Menu: React.FC<MenuProps> = ({
             >
               <Sparkles className="w-4 h-4" />
               Pedir al Universo (IA)
-            </button>
-            
-            <button 
-              onClick={() => {
-                onGetFallbackNote();
-                onClose();
-              }}
-              className="w-full flex items-center justify-center gap-2 bg-amber-50 text-amber-900 border border-amber-200 py-3 rounded-lg font-sans text-xs uppercase tracking-widest hover:bg-amber-100 transition-all active:scale-95"
-            >
-              <BookOpen className="w-4 h-4" />
-              Mensaje de la Colección
             </button>
 
             <button 

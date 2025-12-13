@@ -3,7 +3,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Note, Gender, NoteStyle, Mood, ExtractionResult } from "../types";
 
-const API_KEY = 'AIzaSyDXNpEYeT_8fSEDCCGftwmY_srTeP-jtbA';
+const API_KEY = 'AIzaSyCqFc9wfStocNV0weCvgxNBN9llpwkjVDI';
 
 // --- COLECCIÓN ETERNA (RESPALDO DE 365 NOTAS - UN AÑO COMPLETO) ---
 const FALLBACK_QUOTES = [
@@ -213,7 +213,7 @@ const FALLBACK_QUOTES = [
   "No eres un centro de rehabilitación para personas rotas. Tu misión es amarte a ti misma, no arreglar a los demás.",
   "Quien te quiere de verdad, te busca, te cuida, te respeta y te lo demuestra. Sin excusas, sin peros y sin dudas. Punto.",
   "No aceptes migajas de amor o atención. Tú mereces el banquete completo, con postre incluido. No te conformes con menos.",
-  "Si te roba la paz, es una transacción demasiado cara. Ninguna persona vale más que tu tranquilidad y tu salud mental.",
+  "Si te roban la paz, es una transacción demasiado cara. Ninguna persona vale más que tu tranquilidad y tu salud mental.",
   "A veces, la palabra 'adiós' es el acto de amor propio más bonito y valiente que puedes hacer por ti misma.",
   "No intentes forzar piezas que claramente no encajan en el rompecabezas de tu vida. Lo que es para ti, fluye sin esfuerzo.",
   "Mereces un amor que se sienta como llegar a casa en un día de lluvia: cálido, seguro y reconfortante. No una zona de guerra.",
