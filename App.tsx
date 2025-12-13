@@ -1,8 +1,7 @@
 
-
 import React, { useState, useEffect } from 'react';
-import { Menu as MenuIcon, Instagram, Heart, Brain, Eye, PenTool, Palette, Download, Sparkles, Command } from 'lucide-react';
-import { Note, Gender, NoteStyle, Mood, AppBackground } from './types';
+import { Menu as MenuIcon, Copy, Heart, Brain, Eye, PenTool, Palette, Download, Sparkles, Layers } from 'lucide-react';
+import { Note, Gender, NoteStyle, Mood, AppBackground, AppMode } from './types';
 import { generateDailyNote, getRandomFallbackNote } from './services/geminiService';
 import NoteCard from './components/NoteCard';
 import Menu from './components/Menu';
@@ -10,7 +9,7 @@ import Onboarding from './components/Onboarding';
 import CreateNoteModal from './components/CreateNoteModal';
 import MoodSelector from './components/MoodSelector';
 import QualityEnhancer from './components/QualityEnhancer';
-import AIInstructionsModal from './components/AIInstructionsModal';
+import ModeSelector from './components/ModeSelector';
 import ServiceStatusBanner from './components/ServiceStatusBanner';
 import LimitReachedModal from './components/LimitReachedModal';
 
@@ -40,7 +39,7 @@ const BreathingLoader = () => {
     const interval = setInterval(() => {
       currentIndex = (currentIndex + 1) % cycle.length;
       setText(cycle[currentIndex].t);
-    }, 2000); // Change text every 2 seconds roughly matching the breathing
+    }, 2000); 
 
     return () => clearInterval(interval);
   }, []);
@@ -48,7 +47,6 @@ const BreathingLoader = () => {
   return (
     <div className="flex flex-col items-center justify-center h-96 animate-fade-in">
       <div className="relative flex items-center justify-center">
-        {/* Breathing Circle */}
         <div className="w-24 h-24 bg-white/20 rounded-full animate-breathe absolute blur-xl"></div>
         <div className="w-20 h-20 bg-white/30 rounded-full animate-breathe absolute backdrop-blur-sm border border-white/50"></div>
         <div className="font-serif text-stone-400 z-10 italic text-xl animate-pulse">{text}</div>
@@ -116,22 +114,22 @@ const App: React.FC = () => {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [screenshotMode, setScreenshotMode] = useState(false);
   
-  // New states for Gender, Mood, Custom Notes & Background
+  // User Settings
   const [gender, setGender] = useState<Gender | null>(null);
-  const [currentMood, setCurrentMood] = useState<Mood>('neutral'); // Store current mood
+  const [currentMood, setCurrentMood] = useState<Mood>('neutral');
+  const [currentMode, setCurrentMode] = useState<AppMode>('neutral'); // New Mode State
   const [appBackground, setAppBackground] = useState<AppBackground>('auto');
+  
+  // Modals
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showMoodSelector, setShowMoodSelector] = useState(false);
   const [isEnhancerOpen, setIsEnhancerOpen] = useState(false);
-  
-  // AI Instructions State
-  const [aiInstruction, setAiInstruction] = useState<string>('');
-  const [isAIInstructionModalOpen, setIsAIInstructionModalOpen] = useState(false);
-  
+  const [isModeSelectorOpen, setIsModeSelectorOpen] = useState(false); // Mode Selector Modal
+  const [showLimitModal, setShowLimitModal] = useState(false);
+
   // Usage Limit State
   const [aiUsageCount, setAiUsageCount] = useState(0);
-  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Splash Screen State
   const [isSplashVisible, setIsSplashVisible] = useState(true);
@@ -143,20 +141,19 @@ const App: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsSplashVisible(false);
-    }, 4000); // 4 seconds
+    }, 4000); 
     return () => clearTimeout(timer);
   }, []);
 
-  // Initial Load and Usage Tracking Logic
+  // Initial Load
   useEffect(() => {
     const loadInitialData = async () => {
-      // --- USAGE TRACKING LOGIC ---
+      // Usage
       const today = new Date().toDateString();
       const lastUsageDate = localStorage.getItem('last_usage_date');
       const savedCount = parseInt(localStorage.getItem('ai_usage_count') || '0');
 
       if (lastUsageDate !== today) {
-        // Reset count if it's a new day
         setAiUsageCount(0);
         localStorage.setItem('ai_usage_count', '0');
         localStorage.setItem('last_usage_date', today);
@@ -164,13 +161,13 @@ const App: React.FC = () => {
         setAiUsageCount(savedCount);
       }
 
-      // --- USER DATA LOGIC ---
+      // User Data
       const savedGender = localStorage.getItem('user_gender') as Gender | null;
       const savedMood = localStorage.getItem('user_mood') as Mood | null;
-      if (savedMood) setCurrentMood(savedMood);
+      const savedMode = localStorage.getItem('user_mode') as AppMode | null;
 
-      const savedInstruction = localStorage.getItem('ai_instruction');
-      if (savedInstruction) setAiInstruction(savedInstruction);
+      if (savedMood) setCurrentMood(savedMood);
+      if (savedMode) setCurrentMode(savedMode);
 
       if (savedGender) {
         setGender(savedGender);
@@ -178,7 +175,7 @@ const App: React.FC = () => {
         setShowOnboarding(true);
       }
 
-      // Load saved notes
+      // Notes
       const localNotes = localStorage.getItem('saved_notes');
       if (localNotes) {
         try {
@@ -196,12 +193,10 @@ const App: React.FC = () => {
     loadInitialData();
   }, []);
 
-  // Save favorite notes to local storage
   useEffect(() => {
     localStorage.setItem('saved_notes', JSON.stringify(savedNotes));
   }, [savedNotes]);
 
-  // Helper to increment usage
   const incrementAiUsage = () => {
     const today = new Date().toDateString();
     setAiUsageCount(prev => {
@@ -225,13 +220,10 @@ const App: React.FC = () => {
     setGender(selectedGender);
     setShowOnboarding(false);
     
-    // For new users, we generate the first note immediately as a welcome
-    if (!checkAiLimit()) {
-      return; 
-    }
+    if (!checkAiLimit()) return; 
 
     setIsLoading(true);
-    const note = await generateDailyNote(selectedGender, currentMood, aiInstruction);
+    const note = await generateDailyNote(selectedGender, currentMood, currentMode);
     setCurrentNote(note);
     if (note.isGeneratedByAI) {
       incrementAiUsage();
@@ -246,15 +238,14 @@ const App: React.FC = () => {
 
   const handleMoodSelect = async (mood: Mood) => {
     setCurrentMood(mood);
-    localStorage.setItem('user_mood', mood); // Remember mood
+    localStorage.setItem('user_mood', mood);
     setShowMoodSelector(false);
     
     if (!gender) return;
-
     if (!checkAiLimit()) return;
 
     setIsLoading(true);
-    const note = await generateDailyNote(gender, mood, aiInstruction);
+    const note = await generateDailyNote(gender, mood, currentMode);
     setCurrentNote(note);
     if (note.isGeneratedByAI) {
       incrementAiUsage();
@@ -262,26 +253,32 @@ const App: React.FC = () => {
     setIsLoading(false);
   };
 
-  const handleAIInstructionSave = (instruction: string) => {
-    setAiInstruction(instruction);
-    localStorage.setItem('ai_instruction', instruction);
-    // If user saves a new instruction, usually they want to see it applied.
-    // We trigger generation if they have credits.
-    if (instruction && gender && aiUsageCount < MAX_AI_USES) {
-        handleGenerateNew();
+  const handleModeSelect = async (mode: AppMode) => {
+    setCurrentMode(mode);
+    localStorage.setItem('user_mode', mode);
+    
+    // Auto-generate note in new mode context if user has credits
+    if (gender && aiUsageCount < MAX_AI_USES) {
+        setIsLoading(true);
+        const note = await generateDailyNote(gender, currentMood, mode);
+        setCurrentNote(note);
+        if (note.isGeneratedByAI) {
+            incrementAiUsage();
+        }
+        setIsLoading(false);
     }
   };
 
   const handleGenerateNew = async () => {
     if (!gender) {
-      setShowOnboarding(true); // If for some reason gender is not set, show onboarding
+      setShowOnboarding(true); 
       return;
     }
     
     if (!checkAiLimit()) return;
 
     setIsLoading(true);
-    const note = await generateDailyNote(gender, currentMood, aiInstruction);
+    const note = await generateDailyNote(gender, currentMood, currentMode);
     setCurrentNote(note);
     if (note.isGeneratedByAI) {
       incrementAiUsage();
@@ -289,11 +286,9 @@ const App: React.FC = () => {
     setIsLoading(false);
   };
 
-  // Generate a note from the backup collection (Manual fallback)
   const handleGetFallbackNote = () => {
     const note = getRandomFallbackNote();
     setCurrentNote(note);
-    // Note: We do NOT increment usage for fallback notes as they are offline/free content.
   };
 
   const handleOpenEnhancer = () => {
@@ -306,7 +301,7 @@ const App: React.FC = () => {
   };
 
   const handleRestorationComplete = (note: Note) => {
-    incrementAiUsage(); // Enhancing consumes a credit
+    incrementAiUsage(); 
     setCurrentNote(note);
     if (!savedNotes.find(n => n.content === note.content)) {
        setSavedNotes([note, ...savedNotes]);
@@ -334,7 +329,6 @@ const App: React.FC = () => {
     });
   };
 
-  // Directly set a specific style from the Menu Templates
   const handleSelectStyle = (style: NoteStyle) => {
     if (!currentNote) return;
     setCurrentNote({
@@ -343,53 +337,14 @@ const App: React.FC = () => {
     });
   }
 
-  // Optimized specifically for Instagram Stories (9:16 format)
-  const handleInstagramShare = async () => {
-    const element = document.getElementById('story-capture-stage');
-    if (!element || !window.html2canvas) return;
-
-    setIsGeneratingImage(true);
-
-    setTimeout(async () => {
-      try {
-        const canvas = await window.html2canvas(element, {
-          scale: 1, 
-          backgroundColor: null, 
-          logging: false,
-          useCORS: true, 
-          allowTaint: true,
-          width: 1080,
-          height: 1920
-        });
-
-        canvas.toBlob(async (blob: Blob | null) => {
-          if (!blob) {
-            setIsGeneratingImage(false);
-            return;
-          }
-          const file = new File([blob], "instagram-story.png", { type: "image/png" });
-          if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-            try {
-              await navigator.share({ files: [file] });
-            } catch (err) {
-              console.log('Share cancelled or failed', err);
-            }
-          } else {
-            const link = document.createElement('a');
-            link.download = 'instagram-story.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            alert("Imagen guardada. Abre Instagram y súbela a tu historia.");
-          }
-          setIsGeneratingImage(false);
-        }, 'image/png', 1.0);
-
-      } catch (error) {
-        console.error("Error generating image", error);
-        setIsGeneratingImage(false);
-        alert("Hubo un problema al generar la imagen.");
-      }
-    }, 100);
+  const handleCopyText = async () => {
+    if (!currentNote) return;
+    try {
+        await navigator.clipboard.writeText(`"${currentNote.content}" — ${currentNote.author}`);
+        alert("Texto copiado al portapapeles ✨");
+    } catch (err) {
+        console.error('Failed to copy', err);
+    }
   };
 
   const handleDownloadImage = async () => {
@@ -404,7 +359,7 @@ const App: React.FC = () => {
           scale: 1, 
           backgroundColor: null,
           logging: false,
-          useCORS: true,
+          useCORS: true, 
           allowTaint: true,
           width: 1080,
           height: 1920
@@ -426,48 +381,66 @@ const App: React.FC = () => {
 
   const isSaved = currentNote ? savedNotes.some(n => n.id === currentNote.id) : false;
 
-  const getAutoBackgroundColor = (style?: NoteStyle) => {
-    switch(style) {
-      case 'midnight': return '#0f1115';
-      case 'cinema': return '#1a1a1a';
-      case 'botanical': return '#e8ede8';
-      case 'vintage': return '#ebe6da';
-      case 'rose': return '#fff0f5';
-      default: return '#F0EFEB';
+  // --- THEME LOGIC BASED ON MODE ---
+  const getThemeColors = () => {
+    switch(currentMode) {
+      case 'egocentric':
+        return {
+          bg: 'bg-[#1a1a1a]',
+          text: 'text-yellow-100',
+          accent: 'text-yellow-500',
+          buttonPrimary: 'bg-yellow-600 text-black',
+          buttonSecondary: 'bg-[#333] text-yellow-100 hover:bg-[#444]',
+          headerText: 'text-yellow-500'
+        };
+      case 'redflags':
+        return {
+          bg: 'bg-[#FDF2F2]', // Soft Red
+          text: 'text-red-900',
+          accent: 'text-red-600',
+          buttonPrimary: 'bg-red-600 text-white',
+          buttonSecondary: 'bg-white text-red-800 border border-red-100 hover:bg-red-50',
+          headerText: 'text-red-600'
+        };
+      case 'power':
+        return {
+          bg: 'bg-slate-900',
+          text: 'text-blue-100',
+          accent: 'text-blue-400',
+          buttonPrimary: 'bg-blue-600 text-white',
+          buttonSecondary: 'bg-slate-800 text-blue-200 border border-slate-700 hover:bg-slate-700',
+          headerText: 'text-blue-400'
+        };
+      default: // Neutral
+        return {
+          bg: 'bg-[#F0EFEB]',
+          text: 'text-ink',
+          accent: 'text-ink',
+          buttonPrimary: 'bg-ink text-white',
+          buttonSecondary: 'bg-white text-stone-500 hover:bg-stone-50',
+          headerText: 'text-ink'
+        };
     }
   };
 
-  const getFinalBackgroundColor = () => {
-    if (appBackground === 'light') return '#FDFBF7';
-    if (appBackground === 'dark') return '#0f1115';
-    if (appBackground === 'aura') return '#F3E5F5'; 
-    return getAutoBackgroundColor(currentNote?.style);
-  };
-
-  const getBackgroundClass = () => {
-    if (appBackground === 'aura') return 'bg-gradient-to-br from-rose-100 via-purple-100 to-blue-100';
-    return '';
-  };
-
-  const isDarkBg = () => {
-    if (appBackground === 'dark') return true;
-    if (appBackground === 'auto' && (currentNote?.style === 'midnight' || currentNote?.style === 'cinema')) return true;
-    return false;
-  };
-
-  const uiTextColor = isDarkBg() ? 'text-white' : 'text-ink';
-  const uiBgHover = isDarkBg() ? 'hover:bg-white/10' : 'hover:bg-stone-50';
+  const theme = getThemeColors();
   
-  const secondaryBtnClass = `group p-3 md:p-4 bg-white shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${uiBgHover}`;
-  const mainBtnClass = `group p-5 bg-white shadow-2xl rounded-full transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl active:scale-90 flex items-center justify-center ring-2 ring-stone-100 ${aiUsageCount >= MAX_AI_USES ? 'opacity-50 grayscale' : ''}`;
+  // Specific override for NoteCard BG
+  const getAutoBackgroundColor = (style?: NoteStyle) => {
+     switch(style) {
+       case 'midnight': return '#0f1115';
+       case 'cinema': return '#1a1a1a';
+       case 'botanical': return '#e8ede8';
+       case 'vintage': return '#ebe6da';
+       case 'rose': return '#fff0f5';
+       default: return '#F0EFEB';
+     }
+  };
 
   return (
     <div 
-      className={`min-h-screen w-full relative flex flex-col items-center justify-center transition-all duration-500 ${screenshotMode ? 'cursor-zoom-out' : ''} ${getBackgroundClass()}`}
+      className={`min-h-screen w-full relative flex flex-col items-center justify-center transition-colors duration-700 ease-in-out ${screenshotMode ? 'cursor-zoom-out' : ''} ${theme.bg}`}
       onClick={() => setScreenshotMode(false)}
-      style={{
-        backgroundColor: appBackground !== 'aura' ? getFinalBackgroundColor() : undefined,
-      }}
     >
       {/* SPLASH SCREEN */}
       {isSplashVisible && <SplashScreen />}
@@ -477,7 +450,7 @@ const App: React.FC = () => {
         <ServiceStatusBanner onClose={() => setShowServiceBanner(false)} />
       )}
 
-      {/* LIMIT MODAL */}
+      {/* MODALS */}
       <LimitReachedModal 
         isOpen={showLimitModal} 
         onClose={() => setShowLimitModal(false)} 
@@ -486,9 +459,16 @@ const App: React.FC = () => {
            setIsCreateModalOpen(true);
         }}
       />
+      {isModeSelectorOpen && (
+        <ModeSelector 
+          currentMode={currentMode}
+          onSelect={handleModeSelect}
+          onClose={() => setIsModeSelectorOpen(false)}
+        />
+      )}
 
-      {/* Texture Overlay */}
-      {!isDarkBg() && (
+      {/* Texture Overlay (Only for Neutral/RedFlags) */}
+      {(currentMode === 'neutral' || currentMode === 'redflags') && (
         <div 
           className="absolute inset-0 pointer-events-none opacity-30 z-0"
           style={{
@@ -497,7 +477,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* --- HIDDEN STORY STAGE (1080x1920) --- */}
+      {/* --- HIDDEN STORY STAGE --- */}
       {currentNote && (
         <div 
           id="story-capture-stage"
@@ -539,25 +519,19 @@ const App: React.FC = () => {
       {showMoodSelector && !isSplashVisible && <MoodSelector onSelect={handleMoodSelect} onClose={() => setShowMoodSelector(false)} />}
       <CreateNoteModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onCreate={handleCreateOwnNote} />
       <QualityEnhancer isOpen={isEnhancerOpen} onClose={() => setIsEnhancerOpen(false)} onRestorationComplete={handleRestorationComplete} />
-      <AIInstructionsModal 
-        isOpen={isAIInstructionModalOpen} 
-        onClose={() => setIsAIInstructionModalOpen(false)} 
-        currentInstruction={aiInstruction}
-        onSave={handleAIInstructionSave}
-      />
 
       {/* Header */}
       <nav className={`fixed top-0 w-full p-6 flex justify-between items-center z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 -translate-y-10 pointer-events-none' : 'opacity-100'}`}>
         <div className="flex items-center gap-2">
-           <div className={`w-2 h-2 rounded-full animate-pulse ${isDarkBg() ? 'bg-white' : 'bg-ink'}`}></div>
-           <span className={`font-serif italic text-lg ${uiTextColor}`}>Notas del Alma</span>
-           <span className="ml-2 text-[10px] font-sans opacity-50 bg-stone-200/50 px-2 py-0.5 rounded-full text-ink">
+           <div className={`w-2 h-2 rounded-full animate-pulse bg-current ${theme.text}`}></div>
+           <span className={`font-serif italic text-lg ${theme.headerText} transition-colors duration-500`}>Notas del Alma</span>
+           <span className={`ml-2 text-[10px] font-sans opacity-50 px-2 py-0.5 rounded-full ${theme.text}`}>
              {aiUsageCount}/{MAX_AI_USES}
            </span>
         </div>
         <button 
           onClick={(e) => { e.stopPropagation(); setIsMenuOpen(true); }}
-          className={`p-2 rounded-full transition-colors ${uiTextColor} ${isDarkBg() ? 'hover:bg-white/10' : 'hover:bg-ink/5'}`}
+          className={`p-2 rounded-full transition-colors ${theme.text} hover:opacity-70`}
         >
           <MenuIcon className="w-6 h-6" />
         </button>
@@ -594,60 +568,61 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Controls - Only show if a note is generated */}
+      {/* Controls */}
       {currentNote && (
         <div className={`fixed bottom-6 md:bottom-10 w-full px-4 flex justify-center items-center gap-3 md:gap-6 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-y-20 pointer-events-none' : 'opacity-100'}`}>
           
           <button 
             onClick={(e) => { e.stopPropagation(); setShowMoodSelector(true); }}
-            className={secondaryBtnClass}
+            className={`group p-3 md:p-4 shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${theme.buttonSecondary}`}
             title="Cambiar estado de ánimo"
           >
-            <Brain className="w-5 h-5 text-stone-400 group-hover:text-purple-600 transition-colors" />
+            <Brain className="w-5 h-5" />
           </button>
 
           <button 
             onClick={(e) => { e.stopPropagation(); handleSaveNote(); }}
-            className={secondaryBtnClass}
+            className={`group p-3 md:p-4 shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${theme.buttonSecondary}`}
             title="Guardar en favoritos"
           >
-            <Heart className={`w-5 h-5 transition-colors ${isSaved ? 'fill-rose-400 text-rose-400' : 'text-stone-400 hover:text-rose-400'}`} />
+            <Heart className={`w-5 h-5 transition-colors ${isSaved ? 'fill-current text-rose-500' : ''}`} />
           </button>
 
           <button 
             onClick={(e) => { e.stopPropagation(); handleGenerateNew(); }}
-            className={mainBtnClass}
+            className={`group p-5 shadow-2xl rounded-full transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl active:scale-90 flex items-center justify-center ring-2 ring-white/20 ${theme.buttonPrimary} ${aiUsageCount >= MAX_AI_USES ? 'opacity-50 grayscale' : ''}`}
             title="Nueva Nota"
           >
-            <Sparkles className="w-7 h-7 text-ink group-hover:text-gold transition-colors" />
+            <Sparkles className="w-7 h-7" />
           </button>
 
+          {/* REPLACED INSTAGRAM WITH COPY */}
           <button 
-            onClick={(e) => { e.stopPropagation(); handleInstagramShare(); }}
-            className={`group p-3 md:p-4 bg-white shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${uiBgHover}`}
-            title="Compartir en Historia"
+            onClick={(e) => { e.stopPropagation(); handleCopyText(); }}
+            className={`group p-3 md:p-4 shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${theme.buttonSecondary}`}
+            title="Copiar Texto"
           >
-            <Instagram className="w-5 h-5 text-stone-400 group-hover:text-pink-600 transition-colors" />
+            <Copy className="w-5 h-5" />
           </button>
           
           <button 
             onClick={(e) => { e.stopPropagation(); handleDownloadImage(); }}
-            className={secondaryBtnClass}
+            className={`group p-3 md:p-4 shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${theme.buttonSecondary}`}
             title="Descargar imagen"
           >
-              <Download className="w-5 h-5 text-stone-400 group-hover:text-blue-600 transition-colors" />
+              <Download className="w-5 h-5" />
           </button>
 
         </div>
       )}
 
-      {/* Secondary Tools - Only show if a note is generated */}
+      {/* Secondary Tools */}
       {currentNote && (
         <div className={`fixed right-4 md:right-8 bottom-32 md:bottom-36 flex flex-col gap-3 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100'}`}>
 
           <button 
             onClick={(e) => { e.stopPropagation(); handleCycleStyle(); }}
-            className="p-3 bg-white/80 backdrop-blur shadow-sm rounded-full text-stone-500 hover:text-ink hover:bg-white hover:shadow-md transition-all duration-300 group active:scale-90"
+            className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 group active:scale-90 ${theme.buttonSecondary}`}
             title="Cambiar Estilo Visual"
           >
               <Palette className="w-5 h-5 group-hover:rotate-12 transition-transform" />
@@ -655,23 +630,24 @@ const App: React.FC = () => {
 
           <button 
             onClick={(e) => { e.stopPropagation(); setIsCreateModalOpen(true); }}
-            className="p-3 bg-white/80 backdrop-blur shadow-sm rounded-full text-stone-500 hover:text-ink hover:bg-white hover:shadow-md transition-all duration-300 active:scale-90"
+            className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${theme.buttonSecondary}`}
             title="Escribir mi nota"
           >
               <PenTool className="w-5 h-5" />
           </button>
 
+          {/* REPLACED INSTRUCTIONS WITH MODE SELECTOR */}
           <button 
-            onClick={(e) => { e.stopPropagation(); setIsAIInstructionModalOpen(true); }}
-            className={`p-3 bg-white/80 backdrop-blur shadow-sm rounded-full hover:text-ink hover:bg-white hover:shadow-md transition-all duration-300 active:scale-90 ${aiInstruction ? 'text-purple-600 ring-2 ring-purple-200' : 'text-stone-500'}`}
-            title="Instrucciones a la IA"
+            onClick={(e) => { e.stopPropagation(); setIsModeSelectorOpen(true); }}
+            className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${theme.buttonSecondary} ${currentMode !== 'neutral' ? 'ring-2 ring-current' : ''}`}
+            title="Cambiar Modo (Vibra)"
           >
-              <Command className="w-5 h-5" />
+              <Layers className="w-5 h-5" />
           </button>
 
           <button 
               onClick={(e) => { e.stopPropagation(); setScreenshotMode(true); }}
-              className="p-3 bg-white/80 backdrop-blur shadow-sm rounded-full text-stone-500 hover:text-ink hover:bg-white hover:shadow-md transition-all duration-300 active:scale-90"
+              className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${theme.buttonSecondary}`}
               title="Modo limpio"
           >
               <Eye className="w-5 h-5" />
