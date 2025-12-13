@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { Menu as MenuIcon, Copy, Heart, Brain, Eye, PenTool, Palette, Download, Sparkles, Layers } from 'lucide-react';
-import { Note, Gender, NoteStyle, Mood, AppBackground, AppMode } from './types';
+import { Menu as MenuIcon, Copy, Heart, Brain, Eye, PenTool, Palette, Download, Sparkles, Layers, Moon } from 'lucide-react';
+import { Note, Gender, NoteStyle, Mood, AppBackground, AppMode, AppInterfaceTheme } from './types';
 import { generateDailyNote, getRandomFallbackNote } from './services/geminiService';
 import NoteCard from './components/NoteCard';
 import Menu from './components/Menu';
@@ -23,9 +23,56 @@ declare global {
 // Constants
 const MAX_AI_USES = 10;
 
-// New Component: Zen Breathing Loader
-const BreathingLoader = () => {
+// THEME CONFIGURATION OBJECT
+const themeConfig = {
+  essence: {
+    bg: 'bg-[#F0EFEB]',
+    text: 'text-ink',
+    secondaryText: 'text-stone-400',
+    buttonPrimary: 'bg-ink text-white shadow-xl hover:bg-stone-800',
+    buttonSecondary: 'bg-white text-stone-500 hover:bg-stone-50 border border-stone-100',
+    header: 'text-ink italic',
+    accent: 'text-rose-400',
+    splashBg: 'bg-[#F0EFEB]',
+    splashIconColor: 'text-ink',
+    splashPulse: 'bg-rose-200',
+    loaderColor: 'bg-white/30 border-white/50 text-stone-400',
+    font: 'font-serif'
+  },
+  cosmos: {
+    bg: 'bg-[#0a0a0c]',
+    text: 'text-slate-200',
+    secondaryText: 'text-slate-500',
+    buttonPrimary: 'bg-indigo-600 text-white shadow-indigo-900/50 hover:bg-indigo-500',
+    buttonSecondary: 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800',
+    header: 'text-indigo-300 font-sans tracking-widest uppercase',
+    accent: 'text-indigo-500',
+    splashBg: 'bg-[#050508]',
+    splashIconColor: 'text-indigo-400',
+    splashPulse: 'bg-purple-900',
+    loaderColor: 'bg-indigo-900/20 border-indigo-500/30 text-indigo-300',
+    font: 'font-sans'
+  },
+  coquette: {
+    bg: 'bg-[#FFF0F5]',
+    text: 'text-[#8B4A62]',
+    secondaryText: 'text-[#DB7093]',
+    buttonPrimary: 'bg-[#DB7093] text-white hover:bg-[#C71585] shadow-pink-200',
+    buttonSecondary: 'bg-white text-pink-400 hover:bg-pink-50 border border-pink-100',
+    header: 'text-[#C71585] font-serif italic font-bold',
+    accent: 'text-pink-400',
+    splashBg: 'bg-[#FFF0F5]',
+    splashIconColor: 'text-pink-500',
+    splashPulse: 'bg-pink-200',
+    loaderColor: 'bg-white/40 border-pink-200 text-pink-400',
+    font: 'font-serif'
+  }
+};
+
+// Component: Zen Breathing Loader (Themed)
+const BreathingLoader = ({ theme }: { theme: AppInterfaceTheme }) => {
   const [text, setText] = useState("Inhala...");
+  const t = themeConfig[theme];
   
   useEffect(() => {
     const cycle = [
@@ -33,78 +80,87 @@ const BreathingLoader = () => {
       { t: "Sostén...", d: 2000 },
       { t: "Exhala...", d: 4000 }
     ];
-    
     let currentIndex = 0;
-    
     const interval = setInterval(() => {
       currentIndex = (currentIndex + 1) % cycle.length;
       setText(cycle[currentIndex].t);
     }, 2000); 
-
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="flex flex-col items-center justify-center h-96 animate-fade-in">
       <div className="relative flex items-center justify-center">
-        <div className="w-24 h-24 bg-white/20 rounded-full animate-breathe absolute blur-xl"></div>
-        <div className="w-20 h-20 bg-white/30 rounded-full animate-breathe absolute backdrop-blur-sm border border-white/50"></div>
-        <div className="font-serif text-stone-400 z-10 italic text-xl animate-pulse">{text}</div>
+        <div className={`w-24 h-24 rounded-full animate-breathe absolute blur-xl ${t.splashPulse} opacity-20`}></div>
+        <div className={`w-20 h-20 rounded-full animate-breathe absolute backdrop-blur-sm border ${t.loaderColor}`}></div>
+        <div className={`font-serif z-10 italic text-xl animate-pulse ${t.secondaryText}`}>{text}</div>
       </div>
     </div>
   );
 };
 
-// Component: Initial Splash Screen
-const SplashScreen = () => (
-  <div className="fixed inset-0 z-[200] bg-[#F0EFEB] flex flex-col items-center justify-center animate-fade-in">
-    <div 
-      className="absolute inset-0 pointer-events-none opacity-30 z-0"
-      style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E")`
-      }}
-    />
-    <div className="relative z-10 flex flex-col items-center">
-      <div className="mb-6 relative">
-         <div className="absolute inset-0 bg-rose-200 blur-xl opacity-50 animate-pulse rounded-full"></div>
-         <Sparkles className="w-16 h-16 text-ink relative z-10 animate-float" />
+// Component: Initial Splash Screen (Themed)
+const SplashScreen = ({ theme }: { theme: AppInterfaceTheme }) => {
+  const t = themeConfig[theme];
+  return (
+    <div className={`fixed inset-0 z-[200] flex flex-col items-center justify-center animate-fade-in ${t.splashBg}`}>
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-30 z-0"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E")`
+        }}
+      />
+      <div className="relative z-10 flex flex-col items-center">
+        <div className="mb-6 relative">
+           <div className={`absolute inset-0 blur-xl opacity-50 animate-pulse rounded-full ${t.splashPulse}`}></div>
+           {theme === 'cosmos' ? (
+             <Moon className={`w-16 h-16 relative z-10 animate-float ${t.splashIconColor}`} />
+           ) : theme === 'coquette' ? (
+             <Heart className={`w-16 h-16 relative z-10 animate-float fill-current ${t.splashIconColor}`} />
+           ) : (
+             <Sparkles className={`w-16 h-16 relative z-10 animate-float ${t.splashIconColor}`} />
+           )}
+        </div>
+        <p className={`font-sans text-xs uppercase tracking-[0.4em] mb-3 animate-pulse ${t.secondaryText}`}>
+          Powered By
+        </p>
+        <h1 className={`text-5xl tracking-widest drop-shadow-sm ${t.header}`}>
+          SAM IA
+        </h1>
       </div>
-      <p className="font-sans text-xs uppercase tracking-[0.4em] text-stone-500 mb-3 animate-pulse">
-        Powered By
-      </p>
-      <h1 className="font-serif text-5xl text-ink italic tracking-widest drop-shadow-sm">
-        SAM IA
+    </div>
+  );
+};
+
+// Component: Start Screen (Themed)
+const StartScreen = ({ onStart, theme }: { onStart: () => void, theme: AppInterfaceTheme }) => {
+  const t = themeConfig[theme];
+  return (
+    <div className="flex flex-col items-center justify-center h-full animate-fade-in z-20">
+      <div className="mb-10 relative group">
+         <div className={`absolute inset-0 blur-2xl opacity-40 rounded-full w-40 h-40 animate-pulse transition-opacity duration-1000 ${t.splashPulse}`}></div>
+         <Sparkles className={`w-16 h-16 relative z-10 animate-float ${t.text}`} />
+      </div>
+      
+      <h1 className={`text-4xl md:text-5xl text-center mb-3 tracking-wide drop-shadow-sm ${t.header}`}>
+        Notas del Alma
       </h1>
-    </div>
-  </div>
-);
+      <p className={`font-sans text-[10px] uppercase tracking-[0.3em] mb-12 text-center max-w-[200px] leading-relaxed ${t.secondaryText}`}>
+        Tu dosis diaria de paz mental
+      </p>
 
-// Component: Start Screen
-const StartScreen = ({ onStart }: { onStart: () => void }) => (
-  <div className="flex flex-col items-center justify-center h-full animate-fade-in z-20">
-    <div className="mb-10 relative group">
-       <div className="absolute inset-0 bg-stone-200 blur-2xl opacity-40 rounded-full w-40 h-40 animate-pulse transition-opacity duration-1000"></div>
-       <Sparkles className="w-16 h-16 text-ink/80 relative z-10 animate-float" />
+      <button 
+        onClick={(e) => { e.stopPropagation(); onStart(); }}
+        className={`group relative px-8 py-5 rounded-full font-sans text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl hover:shadow-2xl overflow-hidden ${t.buttonPrimary}`}
+      >
+        <span className="relative z-10 flex items-center gap-3">
+          Revelar Mensaje <Sparkles className="w-3 h-3 animate-pulse" />
+        </span>
+        <div className="absolute inset-0 rounded-full bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+      </button>
     </div>
-    
-    <h1 className="font-serif text-4xl md:text-5xl text-ink italic text-center mb-3 tracking-wide drop-shadow-sm">
-      Notas del Alma
-    </h1>
-    <p className="font-sans text-stone-400 text-[10px] uppercase tracking-[0.3em] mb-12 text-center max-w-[200px] leading-relaxed">
-      Tu dosis diaria de paz mental
-    </p>
-
-    <button 
-      onClick={(e) => { e.stopPropagation(); onStart(); }}
-      className="group relative px-8 py-5 bg-ink text-paper rounded-full font-sans text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl hover:shadow-2xl overflow-hidden"
-    >
-      <span className="relative z-10 flex items-center gap-3">
-        Revelar Mensaje <Sparkles className="w-3 h-3 animate-pulse" />
-      </span>
-      <div className="absolute inset-0 rounded-full bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-    </button>
-  </div>
-);
+  );
+};
 
 const App: React.FC = () => {
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
@@ -117,15 +173,16 @@ const App: React.FC = () => {
   // User Settings
   const [gender, setGender] = useState<Gender | null>(null);
   const [currentMood, setCurrentMood] = useState<Mood>('neutral');
-  const [currentMode, setCurrentMode] = useState<AppMode>('neutral'); // New Mode State
+  const [currentMode, setCurrentMode] = useState<AppMode>('neutral');
   const [appBackground, setAppBackground] = useState<AppBackground>('auto');
+  const [interfaceTheme, setInterfaceTheme] = useState<AppInterfaceTheme>('essence'); // New Theme State
   
   // Modals
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showMoodSelector, setShowMoodSelector] = useState(false);
   const [isEnhancerOpen, setIsEnhancerOpen] = useState(false);
-  const [isModeSelectorOpen, setIsModeSelectorOpen] = useState(false); // Mode Selector Modal
+  const [isModeSelectorOpen, setIsModeSelectorOpen] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Usage Limit State
@@ -165,9 +222,11 @@ const App: React.FC = () => {
       const savedGender = localStorage.getItem('user_gender') as Gender | null;
       const savedMood = localStorage.getItem('user_mood') as Mood | null;
       const savedMode = localStorage.getItem('user_mode') as AppMode | null;
+      const savedTheme = localStorage.getItem('interface_theme') as AppInterfaceTheme | null;
 
       if (savedMood) setCurrentMood(savedMood);
       if (savedMode) setCurrentMode(savedMode);
+      if (savedTheme) setInterfaceTheme(savedTheme);
 
       if (savedGender) {
         setGender(savedGender);
@@ -234,6 +293,11 @@ const App: React.FC = () => {
   const handleBackgroundChange = (bg: AppBackground) => {
     setAppBackground(bg);
     localStorage.setItem('app_background', bg);
+  };
+
+  const handleInterfaceThemeChange = (theme: AppInterfaceTheme) => {
+    setInterfaceTheme(theme);
+    localStorage.setItem('interface_theme', theme);
   };
 
   const handleMoodSelect = async (mood: Mood) => {
@@ -381,49 +445,8 @@ const App: React.FC = () => {
 
   const isSaved = currentNote ? savedNotes.some(n => n.id === currentNote.id) : false;
 
-  // --- THEME LOGIC BASED ON MODE ---
-  const getThemeColors = () => {
-    switch(currentMode) {
-      case 'egocentric':
-        return {
-          bg: 'bg-[#1a1a1a]',
-          text: 'text-yellow-100',
-          accent: 'text-yellow-500',
-          buttonPrimary: 'bg-yellow-600 text-black',
-          buttonSecondary: 'bg-[#333] text-yellow-100 hover:bg-[#444]',
-          headerText: 'text-yellow-500'
-        };
-      case 'redflags':
-        return {
-          bg: 'bg-[#FDF2F2]', // Soft Red
-          text: 'text-red-900',
-          accent: 'text-red-600',
-          buttonPrimary: 'bg-red-600 text-white',
-          buttonSecondary: 'bg-white text-red-800 border border-red-100 hover:bg-red-50',
-          headerText: 'text-red-600'
-        };
-      case 'power':
-        return {
-          bg: 'bg-slate-900',
-          text: 'text-blue-100',
-          accent: 'text-blue-400',
-          buttonPrimary: 'bg-blue-600 text-white',
-          buttonSecondary: 'bg-slate-800 text-blue-200 border border-slate-700 hover:bg-slate-700',
-          headerText: 'text-blue-400'
-        };
-      default: // Neutral
-        return {
-          bg: 'bg-[#F0EFEB]',
-          text: 'text-ink',
-          accent: 'text-ink',
-          buttonPrimary: 'bg-ink text-white',
-          buttonSecondary: 'bg-white text-stone-500 hover:bg-stone-50',
-          headerText: 'text-ink'
-        };
-    }
-  };
-
-  const theme = getThemeColors();
+  // Get current Theme Config
+  const activeTheme = themeConfig[interfaceTheme];
   
   // Specific override for NoteCard BG
   const getAutoBackgroundColor = (style?: NoteStyle) => {
@@ -439,11 +462,11 @@ const App: React.FC = () => {
 
   return (
     <div 
-      className={`min-h-screen w-full relative flex flex-col items-center justify-center transition-colors duration-700 ease-in-out ${screenshotMode ? 'cursor-zoom-out' : ''} ${theme.bg}`}
+      className={`min-h-screen w-full relative flex flex-col items-center justify-center transition-colors duration-700 ease-in-out ${screenshotMode ? 'cursor-zoom-out' : ''} ${activeTheme.bg}`}
       onClick={() => setScreenshotMode(false)}
     >
       {/* SPLASH SCREEN */}
-      {isSplashVisible && <SplashScreen />}
+      {isSplashVisible && <SplashScreen theme={interfaceTheme} />}
       
       {/* SERVICE WARNING BANNER */}
       {showServiceBanner && !isSplashVisible && (
@@ -459,6 +482,7 @@ const App: React.FC = () => {
            setIsCreateModalOpen(true);
         }}
       />
+      {/* FIX: Ensure ModeSelector closes properly by using conditional rendering and a callback wrapper */}
       {isModeSelectorOpen && (
         <ModeSelector 
           currentMode={currentMode}
@@ -467,15 +491,13 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Texture Overlay (Only for Neutral/RedFlags) */}
-      {(currentMode === 'neutral' || currentMode === 'redflags') && (
-        <div 
-          className="absolute inset-0 pointer-events-none opacity-30 z-0"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E")`
-          }}
-        />
-      )}
+      {/* Texture Overlay (Global) */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-30 z-0"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E")`
+        }}
+      />
 
       {/* --- HIDDEN STORY STAGE --- */}
       {currentNote && (
@@ -523,15 +545,15 @@ const App: React.FC = () => {
       {/* Header */}
       <nav className={`fixed top-0 w-full p-6 flex justify-between items-center z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 -translate-y-10 pointer-events-none' : 'opacity-100'}`}>
         <div className="flex items-center gap-2">
-           <div className={`w-2 h-2 rounded-full animate-pulse bg-current ${theme.text}`}></div>
-           <span className={`font-serif italic text-lg ${theme.headerText} transition-colors duration-500`}>Notas del Alma</span>
-           <span className={`ml-2 text-[10px] font-sans opacity-50 px-2 py-0.5 rounded-full ${theme.text}`}>
+           <div className={`w-2 h-2 rounded-full animate-pulse bg-current ${activeTheme.text}`}></div>
+           <span className={`text-lg ${activeTheme.header} transition-colors duration-500`}>Notas del Alma</span>
+           <span className={`ml-2 text-[10px] font-sans opacity-50 px-2 py-0.5 rounded-full ${activeTheme.text} border border-current`}>
              {aiUsageCount}/{MAX_AI_USES}
            </span>
         </div>
         <button 
           onClick={(e) => { e.stopPropagation(); setIsMenuOpen(true); }}
-          className={`p-2 rounded-full transition-colors ${theme.text} hover:opacity-70`}
+          className={`p-2 rounded-full transition-colors ${activeTheme.text} hover:opacity-70`}
         >
           <MenuIcon className="w-6 h-6" />
         </button>
@@ -540,12 +562,12 @@ const App: React.FC = () => {
       {/* Main Content */}
       <main className={`w-full max-w-xl px-4 z-10 transition-all duration-500 flex flex-col justify-center items-center ${screenshotMode ? 'scale-105' : 'scale-100'} flex-grow`}>
         {isLoading ? (
-          <BreathingLoader />
+          <BreathingLoader theme={interfaceTheme} />
         ) : (
           currentNote ? (
             <NoteCard note={currentNote} viewMode={screenshotMode || isGeneratingImage} />
           ) : (
-            !showOnboarding && <StartScreen onStart={handleGenerateNew} />
+            !showOnboarding && <StartScreen onStart={handleGenerateNew} theme={interfaceTheme} />
           )
         )}
       </main>
@@ -574,7 +596,7 @@ const App: React.FC = () => {
           
           <button 
             onClick={(e) => { e.stopPropagation(); setShowMoodSelector(true); }}
-            className={`group p-3 md:p-4 shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${theme.buttonSecondary}`}
+            className={`group p-3 md:p-4 shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${activeTheme.buttonSecondary}`}
             title="Cambiar estado de ánimo"
           >
             <Brain className="w-5 h-5" />
@@ -582,7 +604,7 @@ const App: React.FC = () => {
 
           <button 
             onClick={(e) => { e.stopPropagation(); handleSaveNote(); }}
-            className={`group p-3 md:p-4 shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${theme.buttonSecondary}`}
+            className={`group p-3 md:p-4 shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${activeTheme.buttonSecondary}`}
             title="Guardar en favoritos"
           >
             <Heart className={`w-5 h-5 transition-colors ${isSaved ? 'fill-current text-rose-500' : ''}`} />
@@ -590,7 +612,7 @@ const App: React.FC = () => {
 
           <button 
             onClick={(e) => { e.stopPropagation(); handleGenerateNew(); }}
-            className={`group p-5 shadow-2xl rounded-full transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl active:scale-90 flex items-center justify-center ring-2 ring-white/20 ${theme.buttonPrimary} ${aiUsageCount >= MAX_AI_USES ? 'opacity-50 grayscale' : ''}`}
+            className={`group p-5 shadow-2xl rounded-full transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl active:scale-90 flex items-center justify-center ring-2 ring-white/20 ${activeTheme.buttonPrimary} ${aiUsageCount >= MAX_AI_USES ? 'opacity-50 grayscale' : ''}`}
             title="Nueva Nota"
           >
             <Sparkles className="w-7 h-7" />
@@ -599,7 +621,7 @@ const App: React.FC = () => {
           {/* REPLACED INSTAGRAM WITH COPY */}
           <button 
             onClick={(e) => { e.stopPropagation(); handleCopyText(); }}
-            className={`group p-3 md:p-4 shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${theme.buttonSecondary}`}
+            className={`group p-3 md:p-4 shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${activeTheme.buttonSecondary}`}
             title="Copiar Texto"
           >
             <Copy className="w-5 h-5" />
@@ -607,7 +629,7 @@ const App: React.FC = () => {
           
           <button 
             onClick={(e) => { e.stopPropagation(); handleDownloadImage(); }}
-            className={`group p-3 md:p-4 shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${theme.buttonSecondary}`}
+            className={`group p-3 md:p-4 shadow-lg rounded-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center ${activeTheme.buttonSecondary}`}
             title="Descargar imagen"
           >
               <Download className="w-5 h-5" />
@@ -622,7 +644,7 @@ const App: React.FC = () => {
 
           <button 
             onClick={(e) => { e.stopPropagation(); handleCycleStyle(); }}
-            className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 group active:scale-90 ${theme.buttonSecondary}`}
+            className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 group active:scale-90 ${activeTheme.buttonSecondary}`}
             title="Cambiar Estilo Visual"
           >
               <Palette className="w-5 h-5 group-hover:rotate-12 transition-transform" />
@@ -630,24 +652,24 @@ const App: React.FC = () => {
 
           <button 
             onClick={(e) => { e.stopPropagation(); setIsCreateModalOpen(true); }}
-            className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${theme.buttonSecondary}`}
+            className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${activeTheme.buttonSecondary}`}
             title="Escribir mi nota"
           >
               <PenTool className="w-5 h-5" />
           </button>
 
-          {/* REPLACED INSTRUCTIONS WITH MODE SELECTOR */}
+          {/* MODE SELECTOR */}
           <button 
             onClick={(e) => { e.stopPropagation(); setIsModeSelectorOpen(true); }}
-            className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${theme.buttonSecondary} ${currentMode !== 'neutral' ? 'ring-2 ring-current' : ''}`}
-            title="Cambiar Modo (Vibra)"
+            className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${activeTheme.buttonSecondary} ${currentMode !== 'neutral' ? 'ring-2 ring-current' : ''}`}
+            title="Cambiar Vibra (Modo)"
           >
               <Layers className="w-5 h-5" />
           </button>
 
           <button 
               onClick={(e) => { e.stopPropagation(); setScreenshotMode(true); }}
-              className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${theme.buttonSecondary}`}
+              className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${activeTheme.buttonSecondary}`}
               title="Modo limpio"
           >
               <Eye className="w-5 h-5" />
@@ -668,6 +690,8 @@ const App: React.FC = () => {
         onSelectStyle={handleSelectStyle}
         currentBackground={appBackground}
         onSetBackground={handleBackgroundChange}
+        currentInterfaceTheme={interfaceTheme}
+        onSetInterfaceTheme={handleInterfaceThemeChange}
       />
 
     </div>

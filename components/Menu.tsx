@@ -1,8 +1,7 @@
 
-
 import React from 'react';
-import { X, Heart, Clock, Sparkles, PenTool, LayoutTemplate, Wand2, BookOpen, Layout } from 'lucide-react';
-import { Note, AppBackground, NoteStyle } from '../types';
+import { X, Heart, Clock, Sparkles, PenTool, LayoutTemplate, Wand2, Moon, Palette } from 'lucide-react';
+import { Note, AppBackground, NoteStyle, AppInterfaceTheme } from '../types';
 
 interface MenuProps {
   isOpen: boolean;
@@ -16,6 +15,8 @@ interface MenuProps {
   onSelectStyle: (style: NoteStyle) => void;
   currentBackground: AppBackground;
   onSetBackground: (bg: AppBackground) => void;
+  currentInterfaceTheme: AppInterfaceTheme;
+  onSetInterfaceTheme: (theme: AppInterfaceTheme) => void;
 }
 
 const Menu: React.FC<MenuProps> = ({ 
@@ -29,9 +30,17 @@ const Menu: React.FC<MenuProps> = ({
   onGetFallbackNote,
   onSelectStyle,
   currentBackground,
-  onSetBackground
+  onSetBackground,
+  currentInterfaceTheme,
+  onSetInterfaceTheme
 }) => {
   
+  const interfaceThemes: { id: AppInterfaceTheme; label: string; class: string; icon: React.ElementType }[] = [
+    { id: 'essence', label: 'Esencia', class: 'bg-[#F0EFEB] border-stone-200 text-stone-600', icon: Sparkles },
+    { id: 'cosmos', label: 'Cosmos', class: 'bg-[#0a0a0c] border-slate-700 text-indigo-300', icon: Moon },
+    { id: 'coquette', label: 'Coquette', class: 'bg-[#FFF0F5] border-pink-200 text-pink-500', icon: Heart },
+  ];
+
   const backgrounds: { id: AppBackground; label: string; class: string }[] = [
     { id: 'auto', label: 'Magia', class: 'bg-gradient-to-br from-stone-100 to-stone-200 border-stone-300' },
     { id: 'light', label: 'Luz', class: 'bg-[#FDFBF7] border-stone-200' },
@@ -54,145 +63,113 @@ const Menu: React.FC<MenuProps> = ({
     <>
       {/* Backdrop */}
       <div 
-        className={`fixed inset-0 bg-ink/20 backdrop-blur-sm z-40 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-ink/20 backdrop-blur-sm z-[100] transition-opacity duration-500 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
       />
 
       {/* Drawer */}
-      <div className={`fixed right-0 top-0 h-full w-80 bg-paper shadow-2xl z-50 transform transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto hide-scrollbar`}>
-        <div className="p-6 min-h-full flex flex-col">
-          <div className="flex justify-between items-center mb-6 border-b border-stone-200 pb-4">
-            <h2 className="font-serif text-2xl text-ink italic">Herramientas</h2>
-            <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded-full transition-colors">
-              <X className="w-6 h-6 text-ink/60" />
+      <div 
+        className={`fixed inset-y-0 right-0 w-full max-w-sm bg-white z-[101] shadow-2xl transform transition-transform duration-500 ease-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        <div className="p-6 flex justify-between items-center border-b border-stone-100">
+          <h2 className="font-serif text-2xl text-ink italic">Menú</h2>
+          <button onClick={onClose} className="p-2 hover:bg-stone-50 rounded-full text-stone-400 hover:text-ink transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 hide-scrollbar">
+          
+          {/* Main Actions */}
+          <div className="grid grid-cols-2 gap-3">
+            <button 
+              onClick={() => { onClose(); onGenerateNew(); }}
+              className="p-4 rounded-xl bg-ink text-white shadow-lg flex flex-col items-center justify-center gap-2 hover:bg-stone-800 transition-colors"
+            >
+              <Sparkles className="w-5 h-5" />
+              <span className="font-sans text-xs uppercase tracking-widest">Crear Magia</span>
+            </button>
+            <button 
+              onClick={() => { onClose(); onCreateOwn(); }}
+              className="p-4 rounded-xl border border-stone-200 text-stone-600 flex flex-col items-center justify-center gap-2 hover:bg-stone-50 transition-colors"
+            >
+              <PenTool className="w-5 h-5" />
+              <span className="font-sans text-xs uppercase tracking-widest">Escribir</span>
             </button>
           </div>
 
-          {/* Actions */}
-          <div className="mb-6 space-y-3">
-            <button 
-              onClick={() => {
-                onGenerateNew();
-                onClose();
-              }}
-              className="w-full flex items-center justify-center gap-2 bg-ink text-paper py-3 rounded-lg font-sans text-xs uppercase tracking-widest hover:bg-ink/90 transition-all active:scale-95"
-            >
-              <Sparkles className="w-4 h-4" />
-              Pedir al Universo (IA)
-            </button>
+          <button 
+             onClick={() => { onClose(); onOpenEnhancer(); }}
+             className="w-full p-4 rounded-xl border border-purple-100 bg-purple-50 text-purple-700 flex items-center justify-center gap-3 hover:bg-purple-100 transition-colors group"
+          >
+             <Wand2 className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+             <span className="font-sans text-xs uppercase tracking-widest">Restaurar Calidad (HD)</span>
+          </button>
 
-            <button 
-              onClick={() => {
-                onCreateOwn();
-                onClose();
-              }}
-              className="w-full flex items-center justify-center gap-2 bg-white border border-stone-200 text-ink py-3 rounded-lg font-sans text-xs uppercase tracking-widest hover:bg-stone-50 transition-all active:scale-95"
-            >
-              <PenTool className="w-4 h-4" />
-              Escribir mi nota
-            </button>
-
-            <button 
-              onClick={() => {
-                onOpenEnhancer();
-                onClose();
-              }}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-100 text-purple-900 py-3 rounded-lg font-sans text-xs uppercase tracking-widest hover:bg-purple-100 transition-all active:scale-95"
-            >
-              <Wand2 className="w-4 h-4" />
-              Mejorar Calidad (IA)
-            </button>
-          </div>
-
-          {/* Templates Selector */}
-          <div className="mb-6">
-             <div className="flex items-center gap-2 mb-3 text-stone-400">
-              <Layout className="w-4 h-4" />
-              <span className="font-sans text-xs uppercase tracking-wider">Galería de Plantillas</span>
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              {styles.map((style) => (
+          {/* New Interface Theme Selector */}
+          <div>
+            <h3 className="font-sans text-xs font-bold uppercase tracking-wider text-stone-400 mb-4 flex items-center gap-2">
+              <Palette className="w-4 h-4" /> Apariencia de la App
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              {interfaceThemes.map((theme) => (
                 <button
-                  key={style.id}
-                  onClick={() => {
-                    onSelectStyle(style.id);
-                    onClose();
-                  }}
-                  className={`h-12 rounded-md border flex items-center justify-center transition-all shadow-sm hover:scale-105 ${style.class}`}
-                  title={style.label}
+                  key={theme.id}
+                  onClick={() => onSetInterfaceTheme(theme.id)}
+                  className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all ${theme.class} ${currentInterfaceTheme === theme.id ? 'ring-2 ring-offset-2 ring-ink' : 'opacity-60 hover:opacity-100'}`}
                 >
-                  <span className="text-[8px] font-sans uppercase truncate px-1">{style.label}</span>
+                  <theme.icon className="w-5 h-5" />
+                  <span className="font-sans text-[10px] uppercase font-bold">{theme.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Background Selector */}
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-3 text-stone-400">
-              <LayoutTemplate className="w-4 h-4" />
-              <span className="font-sans text-xs uppercase tracking-wider">Atmósfera</span>
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              {backgrounds.map((bg) => (
-                <button
-                  key={bg.id}
-                  onClick={() => onSetBackground(bg.id)}
-                  className={`flex flex-col items-center gap-2 group`}
-                >
-                  <div className={`w-12 h-12 rounded-full border-2 shadow-sm transition-all ${bg.class} ${currentBackground === bg.id ? 'ring-2 ring-offset-2 ring-ink scale-105' : 'opacity-70 group-hover:opacity-100'}`}>
-                    {bg.id === 'auto' && (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Sparkles className="w-4 h-4 text-stone-400" />
-                      </div>
-                    )}
-                  </div>
-                  <span className={`text-[9px] font-sans uppercase tracking-widest ${currentBackground === bg.id ? 'text-ink font-bold' : 'text-stone-400'}`}>
-                    {bg.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Saved List */}
-          <div className="flex-1">
-            <h3 className="font-sans text-xs uppercase tracking-wider text-stone-400 mb-2">Guardadas</h3>
+          {/* Saved Notes List */}
+          <div>
+            <h3 className="font-sans text-xs font-bold uppercase tracking-wider text-stone-400 mb-4 flex items-center gap-2">
+              <Heart className="w-4 h-4" /> Mis Guardados
+            </h3>
             {savedNotes.length === 0 ? (
-              <div className="text-center text-stone-400 mt-4">
-                <Heart className="w-8 h-8 mx-auto mb-2 opacity-20" />
-                <p className="font-serif italic text-sm">Tu colección está vacía.</p>
+              <div className="text-center py-8 bg-stone-50 rounded-xl border border-stone-100 border-dashed">
+                <p className="font-serif text-stone-400 italic">Aún no has guardado notas.</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {savedNotes.map((note) => (
-                  <div 
-                    key={note.id} 
+                  <button
+                    key={note.id}
                     onClick={() => {
                       onSelectNote(note);
                       onClose();
                     }}
-                    className="p-4 bg-white border border-stone-100 shadow-sm rounded-xl cursor-pointer hover:shadow-md transition-all hover:-translate-y-1 group"
+                    className="w-full p-4 text-left bg-white border border-stone-100 rounded-xl hover:border-stone-300 hover:shadow-md transition-all group"
                   >
-                    <p className="font-serif text-ink/80 text-lg leading-snug line-clamp-3 mb-2 group-hover:text-ink">
-                      "{note.content}"
-                    </p>
-                    <div className="flex justify-between items-center text-xs text-stone-400 font-sans uppercase tracking-wider">
-                      <span>{note.author}</span>
-                      <span className="flex items-center gap-1">
-                         <Clock className="w-3 h-3" />
-                         {new Date(note.timestamp).toLocaleDateString()}
+                    <p className="font-serif text-ink text-lg line-clamp-2 group-hover:text-black">"{note.content}"</p>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="font-sans text-[10px] uppercase text-stone-400 tracking-wider">{note.author}</span>
+                      <span className="font-sans text-[10px] text-stone-300 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {new Date(note.timestamp).toLocaleDateString()}
                       </span>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
           </div>
-          
-          <div className="mt-6 pt-6 border-t border-stone-100 text-center pb-4">
-            <p className="font-serif text-xs text-stone-300 italic">Hecho con amor para ti</p>
+
+          {/* Footer Actions */}
+          <div className="pt-6 border-t border-stone-100 space-y-2">
+             <button 
+               onClick={() => { onClose(); onGetFallbackNote(); }}
+               className="w-full py-3 text-stone-400 hover:text-stone-600 font-sans text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
+             >
+               <LayoutTemplate className="w-4 h-4" />
+               Ver nota aleatoria
+             </button>
           </div>
+
         </div>
       </div>
     </>

@@ -4,6 +4,9 @@ import { Note, Gender, NoteStyle, Mood, ExtractionResult, AppMode } from "../typ
 
 const API_KEY = 'AIzaSyCqFc9wfStocNV0weCvgxNBN9llpwkjVDI';
 
+// Mensaje de error amigable solicitado
+const FRIENDLY_ERROR_MSG = "Conexión inestable con el universo. SAM está recargando energía, por favor intenta mañana.";
+
 // --- COLECCIÓN ETERNA (RESPALDO DE 365 NOTAS - UN AÑO COMPLETO) ---
 const FALLBACK_QUOTES = [
   "Dios no llega tarde, tú te impacientas antes de tiempo. Respira y confía en que su plan es perfecto.",
@@ -69,7 +72,7 @@ export const generateDailyNote = async (
 ): Promise<Note> => {
   
   if (!API_KEY) {
-    console.warn("API Key not found, using fallback.");
+    // Si no hay API KEY, fallback silencioso (simulando que la "conexión" trajo una nota guardada)
     return getRandomFallbackNote();
   }
 
@@ -188,7 +191,9 @@ export const generateDailyNote = async (
     };
 
   } catch (error) {
-    console.error("Error generating note:", error);
+    // Intercept ANY error and translate to user as "Connection Unstable / SAM Resting"
+    // We return a fallback note instead of breaking the app, effectively "handling" the error gently.
+    console.warn("Gemini Service Error (Translated to User as Unstable Connection):", error);
     return getRandomFallbackNote();
   }
 };
@@ -244,7 +249,8 @@ export const analyzeImageForRestoration = async (base64Image: string): Promise<E
     return result as ExtractionResult;
 
   } catch (error) {
-    console.error("Error analyzing image:", error);
-    return { isValid: false, errorReason: "Error al procesar la imagen." };
+    console.warn("Image Analysis Error:", error);
+    // Explicitly return the friendly error message requested by the user
+    return { isValid: false, errorReason: FRIENDLY_ERROR_MSG };
   }
 };

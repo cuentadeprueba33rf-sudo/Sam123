@@ -1,5 +1,4 @@
 
-
 export type Gender = 'female' | 'male' | 'neutral';
 
 export type NoteStyle = 'classic' | 'midnight' | 'aura' | 'minimal' | 'botanical' | 'cinema' | 'vintage' | 'rose';
@@ -9,6 +8,8 @@ export type Mood = 'anxious' | 'sad' | 'grateful' | 'tired' | 'confused' | 'neut
 export type AppBackground = 'auto' | 'light' | 'dark' | 'aura';
 
 export type AppMode = 'neutral' | 'egocentric' | 'redflags' | 'power';
+
+export type AppInterfaceTheme = 'essence' | 'cosmos' | 'coquette';
 
 export interface Note {
   id: string;
@@ -25,6 +26,7 @@ export interface UserSettings {
   hasOnboarded: boolean;
   appBackground: AppBackground;
   mode: AppMode;
+  interfaceTheme: AppInterfaceTheme;
 }
 
 export interface ExtractionResult {
