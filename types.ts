@@ -13,6 +13,15 @@ export type AppInterfaceTheme = 'essence' | 'cosmos' | 'coquette';
 
 export type FlagType = 'none' | 'rainbow' | 'bisexual' | 'lesbian' | 'trans' | 'pan' | 'nonbinary';
 
+export type SocialPlatform = 'instagram' | 'tiktok' | 'twitter' | 'whatsapp';
+
+export interface SocialStrategy {
+  caption: string;
+  hashtags: string[];
+  viralHook: string; // The "hook" text to grab attention
+  strategyTip: string; // Advice on how to post (e.g., audio, timing)
+}
+
 export interface Note {
   id: string;
   content: string;

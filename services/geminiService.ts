@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { Note, Gender, NoteStyle, Mood, ExtractionResult, AppMode } from "../types";
+import { Note, Gender, NoteStyle, Mood, ExtractionResult, AppMode, SocialPlatform, SocialStrategy } from "../types";
 
 const API_KEY = 'AIzaSyCqFc9wfStocNV0weCvgxNBN9llpwkjVDI';
 
@@ -252,5 +252,53 @@ export const analyzeImageForRestoration = async (base64Image: string): Promise<E
     console.warn("Image Analysis Error:", error);
     // Explicitly return the friendly error message requested by the user
     return { isValid: false, errorReason: FRIENDLY_ERROR_MSG };
+  }
+};
+
+// NEW FUNCTION: Social Media Strategy Generator
+export const generateSocialStrategy = async (noteContent: string, platform: SocialPlatform): Promise<SocialStrategy> => {
+  if (!API_KEY) throw new Error("No API Key");
+
+  try {
+    const prompt = `
+      ACTÚA COMO UN EXPERTO EN CRECIMIENTO ORGÁNICO Y COPYWRITING PARA REDES SOCIALES.
+      
+      CONTENIDO DE LA NOTA: "${noteContent}"
+      PLATAFORMA DESTINO: ${platform.toUpperCase()}
+
+      OBJETIVO: Crear un post que genere interacción (likes, guardados, shares).
+
+      GENERAR JSON:
+      1. caption: El texto del post. Debe ser estético, emotivo y persuasivo. Usa saltos de línea y emojis minimalistas.
+      2. hashtags: 5-8 hashtags mezclando nicho (específicos) y alcance (generales).
+      3. viralHook: Una frase CORTA (menos de 50 caracteres) para poner en el video/imagen o primera línea que detenga el scroll.
+      4. strategyTip: Un consejo breve de SAM sobre qué música, hora o formato usar para esta nota específica.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        temperature: 0.9,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            caption: { type: Type.STRING },
+            hashtags: { type: Type.ARRAY, items: { type: Type.STRING } },
+            viralHook: { type: Type.STRING },
+            strategyTip: { type: Type.STRING }
+          },
+          required: ['caption', 'hashtags', 'viralHook', 'strategyTip']
+        }
+      }
+    });
+
+    const result = JSON.parse(response.text || '{}');
+    return result as SocialStrategy;
+
+  } catch (error) {
+    console.error("Social Strategy Error:", error);
+    throw new Error(FRIENDLY_ERROR_MSG);
   }
 };

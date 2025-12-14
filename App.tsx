@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Menu as MenuIcon, Copy, Heart, Brain, Eye, PenTool, Palette, Download, Sparkles, Layers, Moon, Flag, Crown } from 'lucide-react';
+import { Menu as MenuIcon, Copy, Heart, Brain, Eye, PenTool, Palette, Download, Sparkles, Layers, Moon, Flag, Crown, Share2 } from 'lucide-react';
 import { Note, Gender, NoteStyle, Mood, AppBackground, AppMode, AppInterfaceTheme, FlagType } from './types';
 import { generateDailyNote, getRandomFallbackNote } from './services/geminiService';
 import NoteCard from './components/NoteCard';
@@ -12,6 +12,7 @@ import QualityEnhancer from './components/QualityEnhancer';
 import ModeSelector from './components/ModeSelector';
 import ServiceStatusBanner from './components/ServiceStatusBanner';
 import LimitReachedModal from './components/LimitReachedModal';
+import SocialMediaStudio from './components/SocialMediaStudio';
 
 // Declare html2canvas globally since it's loaded via CDN
 declare global {
@@ -227,6 +228,7 @@ const App: React.FC = () => {
   const [isModeSelectorOpen, setIsModeSelectorOpen] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
+  const [isSocialStudioOpen, setIsSocialStudioOpen] = useState(false); // NEW STATE
 
   // Usage Limit State
   const [aiUsageCount, setAiUsageCount] = useState(0);
@@ -596,6 +598,14 @@ const App: React.FC = () => {
         current={userFlag}
       />
 
+      {currentNote && (
+          <SocialMediaStudio 
+            isOpen={isSocialStudioOpen}
+            onClose={() => setIsSocialStudioOpen(false)}
+            note={currentNote}
+          />
+      )}
+
       {/* Texture Overlay (Global) */}
       <div 
         className="absolute inset-0 pointer-events-none opacity-30 z-0"
@@ -746,6 +756,15 @@ const App: React.FC = () => {
       {/* Secondary Tools */}
       {currentNote && (
         <div className={`fixed right-4 md:right-8 bottom-32 md:bottom-36 flex flex-col gap-3 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100'}`}>
+          
+          {/* NEW SOCIAL STUDIO BUTTON */}
+          <button 
+              onClick={(e) => { e.stopPropagation(); setIsSocialStudioOpen(true); }}
+              className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${activeTheme.buttonSecondary} border-indigo-200 text-indigo-500 group`}
+              title="Social Studio (Viral)"
+          >
+              <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          </button>
 
           {/* VIP ONLY BUTTON */}
           {isVIP && (
