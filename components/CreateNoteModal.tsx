@@ -66,11 +66,11 @@ const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ isOpen, onClose, onCr
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              maxLength={120}
+              maxLength={340}
               placeholder="Escribe algo hermoso hoy..."
-              className="w-full p-4 bg-white border border-stone-200 rounded-xl font-serif text-lg text-ink focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/50 resize-none h-24 placeholder:text-stone-300"
+              className="w-full p-4 bg-white border border-stone-200 rounded-xl font-serif text-lg text-ink focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/50 resize-none h-32 placeholder:text-stone-300"
             />
-            <div className="text-right text-xs text-stone-300 mt-1">{content.length}/120</div>
+            <div className="text-right text-xs text-stone-300 mt-1">{content.length}/340</div>
           </div>
 
           <div>

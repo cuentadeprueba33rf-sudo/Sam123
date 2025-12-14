@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { X, Upload, Wand2, AlertCircle, Check, Loader2 } from 'lucide-react';
 import { analyzeImageForRestoration } from '../services/geminiService';
@@ -54,7 +55,7 @@ const QualityEnhancer: React.FC<QualityEnhancerProps> = ({ isOpen, onClose, onRe
         setError(result.errorReason || "La imagen no parece ser una nota válida. Solo aceptamos capturas de texto.");
       }
     } catch (e) {
-      setError("Hubo un error de conexión. Inténtalo de nuevo.");
+      setError("SAM está en un descanso cósmico. No pudimos procesar la imagen.");
     } finally {
       setIsAnalyzing(false);
     }

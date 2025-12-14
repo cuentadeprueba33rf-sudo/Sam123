@@ -4,8 +4,8 @@ import { Note, Gender, NoteStyle, Mood, ExtractionResult, AppMode, SocialPlatfor
 
 const API_KEY = 'AIzaSyCqFc9wfStocNV0weCvgxNBN9llpwkjVDI';
 
-// Mensaje de error amigable solicitado
-const FRIENDLY_ERROR_MSG = "Conexión inestable con el universo. SAM está recargando energía, por favor intenta mañana.";
+// Mensaje de error unificado (Persona de SAM)
+const FRIENDLY_ERROR_MSG = "SAM está en un descanso cósmico recargando energía. Por favor, intenta de nuevo en unos momentos.";
 
 // --- COLECCIÓN ETERNA (RESPALDO DE 365 NOTAS - UN AÑO COMPLETO) ---
 const FALLBACK_QUOTES = [
@@ -72,7 +72,7 @@ export const generateDailyNote = async (
 ): Promise<Note> => {
   
   if (!API_KEY) {
-    // Si no hay API KEY, fallback silencioso (simulando que la "conexión" trajo una nota guardada)
+    // Si no hay API KEY, fallback silencioso
     return getRandomFallbackNote();
   }
 
@@ -191,9 +191,9 @@ export const generateDailyNote = async (
     };
 
   } catch (error) {
-    // Intercept ANY error and translate to user as "Connection Unstable / SAM Resting"
-    // We return a fallback note instead of breaking the app, effectively "handling" the error gently.
-    console.warn("Gemini Service Error (Translated to User as Unstable Connection):", error);
+    // Intercept ANY error. For daily notes, we simply return a fallback note to avoid disrupting the user.
+    // The "Sam is on break" message is handled by the other UI components when direct interaction fails.
+    console.warn("Gemini Service Error:", error);
     return getRandomFallbackNote();
   }
 };
@@ -257,7 +257,7 @@ export const analyzeImageForRestoration = async (base64Image: string): Promise<E
 
 // NEW FUNCTION: Social Media Strategy Generator
 export const generateSocialStrategy = async (noteContent: string, platform: SocialPlatform): Promise<SocialStrategy> => {
-  if (!API_KEY) throw new Error("No API Key");
+  if (!API_KEY) throw new Error(FRIENDLY_ERROR_MSG);
 
   try {
     const prompt = `

@@ -25,7 +25,7 @@ const SocialMediaStudio: React.FC<SocialMediaStudioProps> = ({ isOpen, onClose, 
       const result = await generateSocialStrategy(note.content, platform);
       setStrategy(result);
     } catch (e: any) {
-      setError(e.message || "Error al conectar con SAM.");
+      setError(e.message || "SAM está en un descanso cósmico. Intenta más tarde.");
     } finally {
       setIsLoading(false);
     }
