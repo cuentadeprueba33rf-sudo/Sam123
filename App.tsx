@@ -304,6 +304,7 @@ const App: React.FC = () => {
   const [isGiftRevealing, setIsGiftRevealing] = useState(false); // NEW STATE FOR GIFT
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [screenshotMode, setScreenshotMode] = useState(false);
+  const [isDesktopMode, setIsDesktopMode] = useState(false); // NEW STATE FOR DESKTOP SIMULATION
   
   // User Settings
   const [gender, setGender] = useState<Gender | null>(null);
@@ -700,7 +701,7 @@ const App: React.FC = () => {
 
   return (
     <div 
-      className={`min-h-screen w-full relative flex flex-col items-center justify-center transition-colors duration-700 ease-in-out ${screenshotMode ? 'cursor-zoom-out' : ''} ${activeTheme.bg}`}
+      className={`min-h-screen w-full relative transition-colors duration-700 ease-in-out ${screenshotMode ? 'cursor-zoom-out' : ''} ${activeTheme.bg} ${isDesktopMode ? 'block overflow-x-auto overflow-y-auto' : 'flex flex-col items-center justify-center'}`}
       onClick={() => setScreenshotMode(false)}
     >
       {/* CHRISTMAS DECORATIONS */}
@@ -812,7 +813,7 @@ const App: React.FC = () => {
       <QualityEnhancer isOpen={isEnhancerOpen} onClose={() => setIsEnhancerOpen(false)} onRestorationComplete={handleRestorationComplete} />
 
       {/* Header */}
-      <nav className={`fixed top-0 w-full p-6 flex justify-between items-center z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 -translate-y-10 pointer-events-none' : 'opacity-100'}`}>
+      <nav className={`fixed top-0 w-full p-6 flex justify-between items-center z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 -translate-y-10 pointer-events-none' : 'opacity-100'} ${isDesktopMode ? 'max-w-[1280px] mx-auto left-0 right-0' : ''}`}>
         <div className="flex items-center gap-2">
            <div className={`w-2 h-2 rounded-full animate-pulse bg-current ${activeTheme.text}`}></div>
            <span className={`text-lg ${activeTheme.header} transition-colors duration-500`}>Notas del Alma</span>
@@ -830,11 +831,13 @@ const App: React.FC = () => {
       </nav>
 
       {/* Main Content */}
-      <main className={`w-full max-w-xl px-4 z-10 transition-all duration-500 flex flex-col justify-center items-center ${screenshotMode ? 'scale-105' : 'scale-100'} flex-grow`}>
+      <main className={`${isDesktopMode ? 'w-[1280px] mx-auto mt-32' : 'w-full max-w-xl px-4 flex-grow flex flex-col justify-center items-center'} z-10 transition-all duration-500 ${screenshotMode ? 'scale-105' : 'scale-100'}`}>
         {isLoading ? (
           // IF CHRISTMAS MODE AND GIFT IS READY
           isGiftRevealing ? (
-            <GiftReveal onOpen={handleGiftOpen} />
+            <div className="flex justify-center items-center h-[60vh]">
+               <GiftReveal onOpen={handleGiftOpen} />
+            </div>
           ) : (
             // STANDARD LOADER
             <BreathingLoader theme={interfaceTheme} />
@@ -999,6 +1002,8 @@ const App: React.FC = () => {
         onSetBackground={handleBackgroundChange}
         currentInterfaceTheme={interfaceTheme}
         onSetInterfaceTheme={handleInterfaceThemeChange}
+        isDesktopMode={isDesktopMode}
+        onToggleDesktopMode={() => setIsDesktopMode(!isDesktopMode)}
       />
 
     </div>

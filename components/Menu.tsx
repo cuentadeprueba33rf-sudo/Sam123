@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X, Heart, Clock, Sparkles, PenTool, LayoutTemplate, Wand2, Moon, Palette, Snowflake } from 'lucide-react';
+import { X, Heart, Clock, Sparkles, PenTool, LayoutTemplate, Wand2, Moon, Palette, Snowflake, Monitor } from 'lucide-react';
 import { Note, AppBackground, NoteStyle, AppInterfaceTheme } from '../types';
 
 interface MenuProps {
@@ -17,6 +17,8 @@ interface MenuProps {
   onSetBackground: (bg: AppBackground) => void;
   currentInterfaceTheme: AppInterfaceTheme;
   onSetInterfaceTheme: (theme: AppInterfaceTheme) => void;
+  isDesktopMode: boolean;
+  onToggleDesktopMode: () => void;
 }
 
 const Menu: React.FC<MenuProps> = ({ 
@@ -32,7 +34,9 @@ const Menu: React.FC<MenuProps> = ({
   currentBackground,
   onSetBackground,
   currentInterfaceTheme,
-  onSetInterfaceTheme
+  onSetInterfaceTheme,
+  isDesktopMode,
+  onToggleDesktopMode
 }) => {
   
   const interfaceThemes: { id: AppInterfaceTheme; label: string; class: string; icon: React.ElementType }[] = [
@@ -156,6 +160,14 @@ const Menu: React.FC<MenuProps> = ({
 
           {/* Footer Actions */}
           <div className="pt-6 border-t border-stone-100 space-y-2">
+             <button 
+               onClick={() => { onToggleDesktopMode(); }}
+               className={`w-full py-3 font-sans text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${isDesktopMode ? 'text-ink font-bold bg-stone-100 rounded-lg' : 'text-stone-400 hover:text-stone-600'}`}
+             >
+               <Monitor className="w-4 h-4" />
+               {isDesktopMode ? 'Desactivar Vista Escritorio' : 'Activar Modo Escritorio'}
+             </button>
+
              <button 
                onClick={() => { onClose(); onGetFallbackNote(); }}
                className="w-full py-3 text-stone-400 hover:text-stone-600 font-sans text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
