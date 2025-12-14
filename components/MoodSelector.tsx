@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { CloudRain, Sun, Zap, Coffee, HelpCircle, X } from 'lucide-react';
+import { CloudRain, Sun, Zap, Coffee, HelpCircle, X, Snowflake } from 'lucide-react';
 import { Mood } from '../types';
 
 interface MoodSelectorProps {
@@ -8,6 +9,7 @@ interface MoodSelectorProps {
 }
 
 const moods: { id: Mood; label: string; icon: React.ElementType; color: string }[] = [
+  { id: 'festive', label: 'Festiva / Navideña', icon: Snowflake, color: 'bg-[#0f2c22] text-[#d4af37] border-[#d4af37]' },
   { id: 'anxious', label: 'Ansiedad', icon: CloudRain, color: 'bg-blue-50 text-blue-600 border-blue-200' },
   { id: 'sad', label: 'Tristeza', icon: CloudRain, color: 'bg-indigo-50 text-indigo-600 border-indigo-200' },
   { id: 'grateful', label: 'Gratitud', icon: Sun, color: 'bg-amber-50 text-amber-600 border-amber-200' },

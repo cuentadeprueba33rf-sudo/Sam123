@@ -1,15 +1,15 @@
 
 export type Gender = 'female' | 'male' | 'neutral';
 
-export type NoteStyle = 'classic' | 'midnight' | 'aura' | 'minimal' | 'botanical' | 'cinema' | 'vintage' | 'rose';
+export type NoteStyle = 'classic' | 'midnight' | 'aura' | 'minimal' | 'botanical' | 'cinema' | 'vintage' | 'rose' | 'christmas';
 
-export type Mood = 'anxious' | 'sad' | 'grateful' | 'tired' | 'confused' | 'neutral';
+export type Mood = 'anxious' | 'sad' | 'grateful' | 'tired' | 'confused' | 'neutral' | 'festive';
 
 export type AppBackground = 'auto' | 'light' | 'dark' | 'aura';
 
-export type AppMode = 'neutral' | 'egocentric' | 'redflags' | 'power';
+export type AppMode = 'neutral' | 'egocentric' | 'redflags' | 'power' | 'christmas';
 
-export type AppInterfaceTheme = 'essence' | 'cosmos' | 'coquette';
+export type AppInterfaceTheme = 'essence' | 'cosmos' | 'coquette' | 'christmas';
 
 export type FlagType = 'none' | 'rainbow' | 'bisexual' | 'lesbian' | 'trans' | 'pan' | 'nonbinary';
 
@@ -41,6 +41,8 @@ export interface UserSettings {
   mode: AppMode;
   interfaceTheme: AppInterfaceTheme;
   preferredFlag: FlagType; // New: Saved flag preference
+  rewardLevel: number;
+  nextClaimTime: number;
 }
 
 export interface ExtractionResult {

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X, Heart, Clock, Sparkles, PenTool, LayoutTemplate, Wand2, Moon, Palette } from 'lucide-react';
+import { X, Heart, Clock, Sparkles, PenTool, LayoutTemplate, Wand2, Moon, Palette, Snowflake } from 'lucide-react';
 import { Note, AppBackground, NoteStyle, AppInterfaceTheme } from '../types';
 
 interface MenuProps {
@@ -39,13 +39,7 @@ const Menu: React.FC<MenuProps> = ({
     { id: 'essence', label: 'Esencia', class: 'bg-[#F0EFEB] border-stone-200 text-stone-600', icon: Sparkles },
     { id: 'cosmos', label: 'Cosmos', class: 'bg-[#0a0a0c] border-slate-700 text-indigo-300', icon: Moon },
     { id: 'coquette', label: 'Coquette', class: 'bg-[#FFF0F5] border-pink-200 text-pink-500', icon: Heart },
-  ];
-
-  const backgrounds: { id: AppBackground; label: string; class: string }[] = [
-    { id: 'auto', label: 'Magia', class: 'bg-gradient-to-br from-stone-100 to-stone-200 border-stone-300' },
-    { id: 'light', label: 'Luz', class: 'bg-[#FDFBF7] border-stone-200' },
-    { id: 'dark', label: 'Noche', class: 'bg-[#0f1115] border-stone-700 text-white' },
-    { id: 'aura', label: 'Aura', class: 'bg-gradient-to-br from-rose-100 to-blue-100 border-white' },
+    { id: 'christmas', label: 'Navidad', class: 'bg-[#0f2c22] border-[#C5A065] text-[#C5A065]', icon: Snowflake },
   ];
 
   const styles: { id: NoteStyle; label: string; class: string }[] = [
@@ -57,6 +51,7 @@ const Menu: React.FC<MenuProps> = ({
     { id: 'cinema', label: 'Cine', class: 'bg-black border-stone-700 text-white' },
     { id: 'vintage', label: 'Retro', class: 'bg-[#F5F1E6] border-[#8B4513]' },
     { id: 'rose', label: 'Rose', class: 'bg-[#FFF0F5] border-pink-200' },
+    { id: 'christmas', label: 'Festiva', class: 'bg-[#390909] border-[#C5A065] text-[#C5A065]' },
   ];
 
   return (
@@ -111,7 +106,7 @@ const Menu: React.FC<MenuProps> = ({
             <h3 className="font-sans text-xs font-bold uppercase tracking-wider text-stone-400 mb-4 flex items-center gap-2">
               <Palette className="w-4 h-4" /> Apariencia de la App
             </h3>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {interfaceThemes.map((theme) => (
                 <button
                   key={theme.id}

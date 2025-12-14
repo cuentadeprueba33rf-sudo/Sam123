@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Note, FlagType } from '../types';
-import { Quote, Sparkles, Moon, Star, Leaf, Film, Feather, Heart } from 'lucide-react';
+import { Quote, Sparkles, Moon, Star, Leaf, Film, Feather, Heart, Gift } from 'lucide-react';
 
 interface NoteCardProps {
   note: Note;
@@ -89,6 +89,63 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
   };
 
   const fontSizeClass = getDynamicFontSize(note.content);
+
+  // --- CHRISTMAS STYLE (PREMIUM ROYAL) ---
+  const renderChristmas = () => {
+    return (
+      <div className="relative w-full h-full bg-[#2a0a0d] flex flex-col justify-center items-center text-center p-8 border-[6px] border-[#926F34] shadow-[inset_0_0_60px_rgba(0,0,0,0.9)] overflow-hidden">
+        
+        {/* Background Texture (Red Velvet) */}
+        <div 
+          className="absolute inset-0 opacity-40 mix-blend-overlay"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.5'/%3E%3C/svg%3E")`
+          }}
+        />
+
+        {/* Inner Frame */}
+        <div className="absolute inset-2 border border-[#d4af37] rounded-sm opacity-50"></div>
+        <div className="absolute inset-4 border border-[#d4af37] rounded-sm opacity-30 border-dotted"></div>
+
+        {/* Decorative Corner Flourishes (CSS Shapes) */}
+        <div className="absolute top-0 left-0 w-20 h-20 border-t-[4px] border-l-[4px] border-[#d4af37] rounded-tl-xl opacity-80"></div>
+        <div className="absolute top-0 right-0 w-20 h-20 border-t-[4px] border-r-[4px] border-[#d4af37] rounded-tr-xl opacity-80"></div>
+        <div className="absolute bottom-0 left-0 w-20 h-20 border-b-[4px] border-l-[4px] border-[#d4af37] rounded-bl-xl opacity-80"></div>
+        <div className="absolute bottom-0 right-0 w-20 h-20 border-b-[4px] border-r-[4px] border-[#d4af37] rounded-br-xl opacity-80"></div>
+
+        {/* Wax Seal */}
+        <div className="absolute top-8 right-8 w-16 h-16 opacity-90 drop-shadow-2xl transform rotate-12">
+            <svg viewBox="0 0 100 100" className="w-full h-full fill-[#8f1d24] drop-shadow-md">
+                <circle cx="50" cy="50" r="45" />
+                <circle cx="50" cy="50" r="35" stroke="#601015" strokeWidth="2" fill="none" />
+                <text x="50" y="55" textAnchor="middle" fill="#50080c" fontFamily="serif" fontSize="24" fontWeight="bold">S</text>
+            </svg>
+        </div>
+
+        <div className="relative z-10 space-y-8 my-auto max-w-[95%]">
+          {/* Main Text - Gold Foil Effect */}
+          <h1 
+            className={`font-christmas text-4xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-b from-[#fadd7e] to-[#c5a065] leading-relaxed tracking-wide drop-shadow-md select-none py-2`}
+            style={{ textShadow: '0px 2px 4px rgba(0,0,0,0.5)' }}
+          >
+            {note.content}
+          </h1>
+        </div>
+
+        <div className="absolute bottom-12 w-full flex flex-col justify-center items-center">
+           <div className="flex items-center gap-4 mb-3 opacity-60">
+             <div className="w-8 h-[1px] bg-[#d4af37]"></div>
+             <Sparkles className="w-3 h-3 text-[#d4af37]" />
+             <div className="w-8 h-[1px] bg-[#d4af37]"></div>
+           </div>
+           <p className="font-royal text-[#d4af37] text-xs tracking-[0.2em] uppercase font-bold">
+             {note.author}
+           </p>
+           <FlagIcon type={note.userFlag} className="mt-3" />
+        </div>
+      </div>
+    );
+  };
 
   // --- CLASSIC STYLE (UNTOUCHED) ---
   const renderClassic = () => {
@@ -366,6 +423,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
   // --- RENDERER ---
   const renderStyle = () => {
     switch (note.style) {
+      case 'christmas': return renderChristmas();
       case 'midnight': return renderMidnight();
       case 'aura': return renderAura();
       case 'minimal': return renderMinimal();
@@ -408,7 +466,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, viewMode, className = '', id 
       
       {/* Date hint underneath - only in view mode */}
       {!viewMode && (
-        <p className="text-center font-serif text-stone-400 text-xs mt-6 italic opacity-60">
+        <p className={`text-center font-serif text-xs mt-6 italic opacity-60 ${note.style === 'christmas' ? 'text-[#d4af37]' : 'text-stone-400'}`}>
           {new Date(note.timestamp).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' })}
         </p>
       )}

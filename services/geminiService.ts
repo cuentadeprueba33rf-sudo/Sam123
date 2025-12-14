@@ -5,61 +5,75 @@ import { Note, Gender, NoteStyle, Mood, ExtractionResult, AppMode, SocialPlatfor
 const API_KEY = 'AIzaSyCqFc9wfStocNV0weCvgxNBN9llpwkjVDI';
 
 // Mensaje de error unificado (Persona de SAM)
-const FRIENDLY_ERROR_MSG = "SAM está en un descanso cósmico recargando energía. Por favor, intenta de nuevo en unos momentos.";
+const FRIENDLY_ERROR_MSG = "SAM está envolviendo regalos cósmicos. La conexión con el Polo Norte falló, intenta de nuevo.";
 
-// --- COLECCIÓN ETERNA (RESPALDO DE 365 NOTAS - UN AÑO COMPLETO) ---
+// --- COLECCIÓN ETERNA (BASE) ---
 const FALLBACK_QUOTES = [
+  "Esta Navidad, el mejor regalo eres tú sanando, creciendo y amándote.",
+  "Que la magia de estos días te recuerde que los milagros ocurren cuando crees en ti.",
+  "No necesitas a nadie bajo el muérdago para sentirte completa. Eres tu propia celebración.",
+  "Cierra los ojos y pide un deseo; el universo ya está trabajando en su envío.",
   "Dios no llega tarde, tú te impacientas antes de tiempo. Respira y confía en que su plan es perfecto.",
-  "Ora, espera y no te preocupes. La preocupación es como pagar una deuda que no tienes.",
-  "Si Dios te quitó eso de tu vida, es porque te estorbaba para lo grandioso que viene en camino.",
-  "Tu fe debe ser más grande que cualquier miedo que intente paralizarte. Recuerda que no caminas sola.",
   "Lo que es para ti, ni el diablo te lo quita. Puedes estar tranquila, lo que te pertenece llegará.",
-  "No le cuentes a Dios cuán grande es tu problema, cuéntale a ese problema cuán inmenso es tu Dios.",
-  "Eres absolutamente suficiente, tal y como eres en este preciso instante. No necesitas cambiar nada.",
-  "No permitas que los comentarios de personas con mentes pequeñas definan la inmensidad de tu realidad.",
-  "Recuerda que el mundo gira alrededor del sol y sobre su propio eje, no alrededor de ellos.",
-  "Vales mucho más de lo que te han hecho creer las heridas del pasado. Tu valor es intrínseco.",
   "Tu paz mental no es negociable. Si algo o alguien te la roba, es demasiado caro.",
-  "No eres una opción para ratos libres, eres un privilegio para toda la vida.",
   "Brilla con toda tu fuerza, y si a alguien le molesta tu luz, que se ponga gafas de sol.",
-  "Si te hace dudar de tu valor, de tu paz o de tu cordura, ahí no es.",
-  "No elijas a cualquiera por miedo a la soledad. Elige a quien te de paz.",
-  "El interés se nota en las acciones, no en las palabras bonitas. Y el desinterés se nota más.",
-  "No le guardes luto a alguien que eligió irse de tu vida. Agradécele por el espacio que dejó libre.",
-  "Si hubiera querido, lo habría hecho. Deja de buscar excusas para justificar su falta de interés.",
-  "Deja de buscar agua en pozos que tú misma sabes que están secos.",
-  "A veces, perder a la persona equivocada es la mayor ganancia de tu vida.",
-  "No lo llames orgullo, llámalo dignidad. Hay una gran diferencia entre rogar y valorar tu paz.",
-  "El que se va sin que lo echen, a menudo vuelve sin que lo llamen. Cambia la cerradura.",
-  "No eres un centro de rehabilitación para personas rotas. Tu misión es amarte a ti misma.",
-  "Quien te quiere de verdad, te busca, te cuida y te respeta. Sin excusas.",
-  "La vida es un eco; lo que envías, regresa. Lo que siembras, cosechas.",
-  "No esperes nada de nadie, espéralo todo de ti. Eres la única capaz de cumplir tus sueños.",
-  "Conviértete en el cambio que quieres ver en el mundo. Empieza por tu interior.",
-  "La felicidad no es un destino, es una elección consciente de cada día.",
-  "Disfruta de las pequeñas cosas, un día te darás cuenta de que eran las grandes cosas.",
-  "La gratitud transforma lo que tienes en suficiente.",
-  "Hazlo con miedo, pero hazlo. La valentía es actuar a pesar del miedo.",
   "El éxito es la suma de pequeños esfuerzos repetidos día tras día.",
-  "No cuentes los días, haz que los días cuenten.",
-  "La vida es corta. Cómprate los zapatos, come el postre.",
-  "Sonríe, es tu mejor venganza contra quien quiere verte mal.",
-  "Eres la autora de tu propia vida, no dejes que nadie más escriba el guion."
+  "La vida es corta. Cómprate los zapatos, come el postre, abraza fuerte.",
+  "Diciembre es para soltar lo que dolió y abrir los brazos a lo que vendrá.",
+  "Tu luz es suficiente para iluminar cualquier noche oscura. Feliz renacer."
+];
+
+// --- COLECCIÓN EXPANDIDA (DESBLOQUEABLE) ---
+const TIER_1_QUOTES = [ // Nivel 2: Susurros del Alma
+  "A veces perderse es la única manera de encontrarse de verdad.",
+  "Tu intuición es la voz de tu alma; nunca dejes de escucharla.",
+  "Lo que buscas también te está buscando a ti. Mantén la fe.",
+  "Eres arte en los ojos de quien sabe mirar con el corazón.",
+  "No floreces para que te vean, floreces porque estás viva."
+];
+
+const TIER_2_QUOTES = [ // Nivel 4: Ecos del Destino
+  "El universo no comete errores. Si estás aquí, es por una razón divina.",
+  "Tu historia es única y el mundo necesita escuchar tu voz.",
+  "La herida es el lugar por donde entra la luz. Sana con amor.",
+  "No eres lo que te pasó, eres en quien decides convertirte.",
+  "El coraje no es la ausencia de miedo, es caminar a pesar de él."
+];
+
+const TIER_3_QUOTES = [ // Nivel 6: Secretos Estelares
+  "Estás hecha de polvo de estrellas; brillar es tu naturaleza inevitable.",
+  "El amor propio es la revolución más silenciosa y poderosa que existe.",
+  "Todo lo que necesitas ya está dentro de ti, esperando despertar.",
+  "Confía en la magia de los nuevos comienzos, incluso si empiezan pequeños.",
+  "Eres infinita, eterna y absolutamente inolvidable para el universo."
 ];
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 // Exported so it can be used manually by the Menu button
-export const getRandomFallbackNote = (): Note => {
-  const content = FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
+export const getRandomFallbackNote = (rewardLevel: number = 0): Note => {
+  // Combine pools based on reward level
+  let availableQuotes = [...FALLBACK_QUOTES];
+  
+  if (rewardLevel >= 2) availableQuotes = [...availableQuotes, ...TIER_1_QUOTES];
+  if (rewardLevel >= 4) availableQuotes = [...availableQuotes, ...TIER_2_QUOTES];
+  if (rewardLevel >= 6) availableQuotes = [...availableQuotes, ...TIER_3_QUOTES];
+
+  const content = availableQuotes[Math.floor(Math.random() * availableQuotes.length)];
   const themes = ['hope', 'courage', 'love', 'peace'] as const;
   
+  // Decide author name based on exclusivity
+  let authorName = "Colección Navideña";
+  if (TIER_3_QUOTES.includes(content)) authorName = "Secreto Estelar";
+  else if (TIER_2_QUOTES.includes(content)) authorName = "Eco del Destino";
+  else if (TIER_1_QUOTES.includes(content)) authorName = "Susurro del Alma";
+
   return {
     id: crypto.randomUUID(),
     content: content,
-    author: "Colección Eterna",
+    author: authorName,
     theme: themes[Math.floor(Math.random() * themes.length)],
-    style: 'classic', // Default, user can change
+    style: 'christmas', // Default to Christmas for fallback now
     timestamp: Date.now(),
     isGeneratedByAI: false
   };
@@ -72,7 +86,6 @@ export const generateDailyNote = async (
 ): Promise<Note> => {
   
   if (!API_KEY) {
-    // Si no hay API KEY, fallback silencioso
     return getRandomFallbackNote();
   }
 
@@ -90,28 +103,32 @@ export const generateDailyNote = async (
     // Define Mode Instructions (Personality)
     let modeInstruction = "";
     switch (mode) {
+      case 'christmas':
+        modeInstruction = `
+          🎄 MODO NAVIDAD MÁGICA:
+          - Tono: Mágico, cálido, esperanzador, familiar, acogedor.
+          - Mensaje: Sobre nuevos comienzos, gratitud, amor propio en fiestas, milagros de diciembre.
+          - Estilo: Como una carta de Santa o del Universo.
+        `;
+        break;
       case 'egocentric':
         modeInstruction = `
           🎭 MODO EGOCÉNTRICO (Main Character Energy):
           - Tono: Superioridad elegante, vanidad sana, inalcanzable.
           - Mensaje: Recuérdale que es un premio, no una opción.
-          - Estilo: Frases de reina/rey.
         `;
         break;
       case 'redflags':
         modeInstruction = `
           🚩 MODO RED FLAGS (Amiga date cuenta):
           - Tono: Crudo, directo, "golpe de realidad".
-          - Mensaje: Expón las excusas, la falta de interés o la manipulación.
-          - Estilo: Una verdad incómoda que necesita oír.
+          - Mensaje: Expón las excusas o la falta de interés.
         `;
         break;
       case 'power':
         modeInstruction = `
           ⚡ MODO PODER (Boss Energy):
           - Tono: Exigente, motivador, enfocado en el éxito/dinero.
-          - Mensaje: "Deja de llorar y ponte a trabajar/estudiar".
-          - Estilo: Órdenes directas al subconsciente.
         `;
         break;
       default: // Neutral
@@ -119,18 +136,18 @@ export const generateDailyNote = async (
           ✨ MODO NEUTRO (Paz y Espiritualidad):
           - Tono: Cálido, espiritual, sanador.
           - Mensaje: Esperanza, fe y calma.
-          - Estilo: Un abrazo en forma de texto.
         `;
         break;
     }
 
-    // Define mood context (Secondary to Mode)
+    // Define mood context
     let moodContext = "";
-    if (mood !== 'neutral') {
+    if (mood === 'festive') {
+        moodContext = "Estado: Festivo/Navideño. Celebra la vida.";
+    } else if (mood !== 'neutral') {
        moodContext = `Estado emocional: ${mood}. Adapta el mensaje para ayudar con esto.`;
     }
 
-    // Add Random Seed to Prompt
     const randomSeed = Math.random().toString(36).substring(7);
 
     const prompt = `
@@ -144,25 +161,23 @@ export const generateDailyNote = async (
 
       TU OBJETIVO: Generar una NOTA CONCISA y SIGNIFICATIVA.
       
-      REGLAS DE LONGITUD (IMPORTANTE):
-      1. Longitud perfecta: Entre 25 y 40 palabras.
-      2. Ni muy corta (que parezca vacía) ni muy larga (que de pereza leer).
-      3. Estructura: Una afirmación fuerte seguida de una justificación emocional o consejo.
-      4. Que se sienta como un mensaje que guardarías en favoritos.
+      REGLAS:
+      1. Longitud: Entre 25 y 40 palabras.
+      2. Estética: Profunda y hermosa.
     `;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
       config: {
-        systemInstruction: "Eres una IA que escribe frases profundas y estéticas. Tu longitud es equilibrada (2-3 oraciones).",
+        systemInstruction: "Eres SAM, una IA con alma navideña y estética. Escribe con magia.",
         temperature: 1.2,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
             content: { type: Type.STRING },
-            author: { type: Type.STRING, description: "Firma acorde al modo ej: 'Tu Ego', 'Realidad', 'El Jefe', 'Universo'" },
+            author: { type: Type.STRING },
             theme: { type: Type.STRING, enum: ['hope', 'courage', 'love', 'peace'] }
           },
           required: ['content', 'author', 'theme']
@@ -176,23 +191,22 @@ export const generateDailyNote = async (
 
     // Determine style based on mode automatically
     let style: NoteStyle = 'classic';
-    if (mode === 'egocentric') style = 'cinema';
-    if (mode === 'redflags') style = 'minimal';
-    if (mode === 'power') style = 'midnight';
+    if (mode === 'christmas') style = 'christmas';
+    else if (mode === 'egocentric') style = 'cinema';
+    else if (mode === 'redflags') style = 'minimal';
+    else if (mode === 'power') style = 'midnight';
 
     return {
       id: crypto.randomUUID(),
       content: jsonResponse.content,
-      author: jsonResponse.author || "Nota Diaria",
+      author: jsonResponse.author || "SAM Navideño",
       theme: jsonResponse.theme || 'hope',
-      style: style, // Overwrite style based on mode for better UX
+      style: style,
       timestamp: Date.now(),
       isGeneratedByAI: true 
     };
 
   } catch (error) {
-    // Intercept ANY error. For daily notes, we simply return a fallback note to avoid disrupting the user.
-    // The "Sam is on break" message is handled by the other UI components when direct interaction fails.
     console.warn("Gemini Service Error:", error);
     return getRandomFallbackNote();
   }
@@ -204,12 +218,7 @@ export const analyzeImageForRestoration = async (base64Image: string): Promise<E
     const mimeType = mimeMatch ? mimeMatch[1] : "image/png"; 
     const cleanBase64 = base64Image.replace(/^data:image\/[a-zA-Z+]+;base64,/, "");
 
-    const prompt = `
-      ACTÚA COMO UN CURADOR DE CONTENIDO LITERARIO.
-      Analiza si la imagen contiene una frase o cita válida.
-      SI ES VÁLIDO: Extrae texto, autor y tema.
-      SI ES INVÁLIDO: Marca isValid: false.
-    `;
+    const prompt = `Analiza si la imagen contiene una frase válida. Extrae texto, autor y tema.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -233,7 +242,7 @@ export const analyzeImageForRestoration = async (base64Image: string): Promise<E
                 content: { type: Type.STRING },
                 author: { type: Type.STRING },
                 theme: { type: Type.STRING, enum: ['hope', 'courage', 'love', 'peace'] },
-                style: { type: Type.STRING, enum: ['classic', 'midnight', 'aura', 'minimal', 'botanical', 'cinema', 'vintage', 'rose'] }
+                style: { type: Type.STRING, enum: ['classic', 'midnight', 'aura', 'minimal', 'botanical', 'cinema', 'vintage', 'rose', 'christmas'] }
               }
             }
           },
@@ -249,8 +258,6 @@ export const analyzeImageForRestoration = async (base64Image: string): Promise<E
     return result as ExtractionResult;
 
   } catch (error) {
-    console.warn("Image Analysis Error:", error);
-    // Explicitly return the friendly error message requested by the user
     return { isValid: false, errorReason: FRIENDLY_ERROR_MSG };
   }
 };
@@ -261,18 +268,11 @@ export const generateSocialStrategy = async (noteContent: string, platform: Soci
 
   try {
     const prompt = `
-      ACTÚA COMO UN EXPERTO EN CRECIMIENTO ORGÁNICO Y COPYWRITING PARA REDES SOCIALES.
+      ACTÚA COMO UN EXPERTO EN MARKETING DIGITAL NAVIDEÑO.
+      CONTENIDO: "${noteContent}"
+      PLATAFORMA: ${platform.toUpperCase()}
       
-      CONTENIDO DE LA NOTA: "${noteContent}"
-      PLATAFORMA DESTINO: ${platform.toUpperCase()}
-
-      OBJETIVO: Crear un post que genere interacción (likes, guardados, shares).
-
-      GENERAR JSON:
-      1. caption: El texto del post. Debe ser estético, emotivo y persuasivo. Usa saltos de línea y emojis minimalistas.
-      2. hashtags: 5-8 hashtags mezclando nicho (específicos) y alcance (generales).
-      3. viralHook: Una frase CORTA (menos de 50 caracteres) para poner en el video/imagen o primera línea que detenga el scroll.
-      4. strategyTip: Un consejo breve de SAM sobre qué música, hora o formato usar para esta nota específica.
+      Genera caption viral, hashtags navideños y gancho.
     `;
 
     const response = await ai.models.generateContent({
@@ -298,7 +298,6 @@ export const generateSocialStrategy = async (noteContent: string, platform: Soci
     return result as SocialStrategy;
 
   } catch (error) {
-    console.error("Social Strategy Error:", error);
     throw new Error(FRIENDLY_ERROR_MSG);
   }
 };

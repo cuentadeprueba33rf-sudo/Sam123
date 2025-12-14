@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Menu as MenuIcon, Copy, Heart, Brain, Eye, PenTool, Palette, Download, Sparkles, Layers, Moon, Flag, Crown, Share2 } from 'lucide-react';
+import { Menu as MenuIcon, Copy, Heart, Brain, Eye, PenTool, Palette, Download, Sparkles, Layers, Moon, Flag, Crown, Share2, Snowflake, Gift, Ticket } from 'lucide-react';
 import { Note, Gender, NoteStyle, Mood, AppBackground, AppMode, AppInterfaceTheme, FlagType } from './types';
 import { generateDailyNote, getRandomFallbackNote } from './services/geminiService';
 import NoteCard from './components/NoteCard';
@@ -13,6 +13,7 @@ import ModeSelector from './components/ModeSelector';
 import ServiceStatusBanner from './components/ServiceStatusBanner';
 import LimitReachedModal from './components/LimitReachedModal';
 import SocialMediaStudio from './components/SocialMediaStudio';
+import RewardsPass from './components/RewardsPass';
 
 // Declare html2canvas globally since it's loaded via CDN
 declare global {
@@ -22,9 +23,9 @@ declare global {
 }
 
 // Constants
-const MAX_AI_USES = 10;
-// VERSION FLAG: Change this string to force a reset on all user devices
-const APP_VERSION = 'v_update_reset_sam_2.0';
+const BASE_AI_USES = 10;
+// VERSION FLAG: UPDATE FOR CHRISTMAS RESET
+const APP_VERSION = 'v_christmas_royal_4.0';
 
 // THEME CONFIGURATION OBJECT
 const themeConfig = {
@@ -69,7 +70,93 @@ const themeConfig = {
     splashPulse: 'bg-pink-200',
     loaderColor: 'bg-white/40 border-pink-200 text-pink-400',
     font: 'font-serif'
+  },
+  christmas: {
+    bg: 'aurora-bg', // Using the custom CSS class for Aurora
+    text: 'text-[#d4af37]', // Royal Gold
+    secondaryText: 'text-[#a3bfa8]',
+    buttonPrimary: 'bg-[#8f1d24] text-[#fadd7e] shadow-[0_0_20px_rgba(143,29,36,0.6)] hover:bg-[#7a181e] border border-[#d4af37]/30 font-royal tracking-widest', // Velvet Red & Gold
+    buttonSecondary: 'bg-[#1a0505]/80 backdrop-blur-md text-[#d4af37] hover:bg-[#2a0a0d] border border-[#d4af37]/50', // Dark velvet with gold text
+    header: 'text-[#d4af37] font-christmas text-4xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]',
+    accent: 'text-[#8f1d24]',
+    splashBg: 'bg-[#0f0202]',
+    splashIconColor: 'text-[#d4af37]',
+    splashPulse: 'bg-[#8f1d24]',
+    loaderColor: 'bg-[#d4af37]/20 border-[#d4af37] text-[#d4af37]',
+    font: 'font-christmas'
   }
+};
+
+// --- CHRISTMAS DECORATIONS ---
+const Snowfall = () => (
+  <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    {[...Array(30)].map((_, i) => (
+      <div
+        key={i}
+        className="absolute text-white/40 animate-[fall_12s_linear_infinite]"
+        style={{
+          left: `${Math.random() * 100}%`,
+          top: `-${Math.random() * 20}%`,
+          animationDelay: `${Math.random() * 6}s`,
+          fontSize: `${Math.random() * 8 + 4}px`,
+          textShadow: '0 0 5px white'
+        }}
+      >
+        ❄
+      </div>
+    ))}
+    <style>{`
+      @keyframes fall {
+        0% { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 0; }
+        10% { opacity: 0.8; }
+        50% { transform: translateY(50vh) translateX(10px) rotate(180deg); }
+        100% { transform: translateY(110vh) translateX(-10px) rotate(360deg); opacity: 0; }
+      }
+    `}</style>
+  </div>
+);
+
+const ChristmasLights = () => (
+    <div className="fixed top-0 left-0 w-full flex justify-around pointer-events-none z-[5]">
+        {[...Array(12)].map((_, i) => (
+            <div key={i} className="flex flex-col items-center">
+                 <div className="w-[1px] h-6 bg-black/30"></div>
+                 <div className={`w-3 h-3 rounded-full shadow-[0_0_10px_currentColor] animate-glow ${['text-red-500', 'text-yellow-400', 'text-green-500', 'text-blue-400'][i % 4]}`} style={{ animationDelay: `${i * 0.2}s`, backgroundColor: 'currentColor' }}></div>
+            </div>
+        ))}
+    </div>
+);
+
+// --- GIFT REVEAL COMPONENT ---
+const GiftReveal = ({ onOpen }: { onOpen: () => void }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const handleClick = () => {
+        setIsOpen(true);
+        setTimeout(onOpen, 1000); // Wait for explosion animation
+    };
+
+    if (isOpen) {
+        return (
+            <div className="flex items-center justify-center animate-[ping_1s_ease-out_forwards]">
+                 <Sparkles className="w-24 h-24 text-yellow-300" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col items-center justify-center cursor-pointer animate-fade-in z-50" onClick={handleClick}>
+             <p className="font-christmas text-[#d4af37] text-2xl mb-4 animate-pulse drop-shadow-md">Toca para abrir tu regalo</p>
+             <div className="relative group hover:scale-110 transition-transform duration-300">
+                <div className="absolute inset-0 bg-[#d4af37]/30 blur-xl rounded-full animate-pulse"></div>
+                <Gift className="w-24 h-24 text-[#8f1d24] fill-[#50080c] drop-shadow-2xl animate-shake" strokeWidth={1.5} />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <div className="w-4 h-24 bg-[#d4af37] opacity-80 rounded-sm"></div>
+                    <div className="w-24 h-4 bg-[#d4af37] opacity-80 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-sm"></div>
+                </div>
+             </div>
+        </div>
+    );
 };
 
 // --- VIP FLAG SELECTOR MODAL ---
@@ -144,16 +231,15 @@ const SplashScreen = ({ theme }: { theme: AppInterfaceTheme }) => {
   const t = themeConfig[theme];
   return (
     <div className={`fixed inset-0 z-[200] flex flex-col items-center justify-center animate-fade-in ${t.splashBg}`}>
-      <div 
-        className="absolute inset-0 pointer-events-none opacity-30 z-0"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E")`
-        }}
-      />
       <div className="relative z-10 flex flex-col items-center">
         <div className="mb-6 relative">
            <div className={`absolute inset-0 blur-xl opacity-50 animate-pulse rounded-full ${t.splashPulse}`}></div>
-           {theme === 'cosmos' ? (
+           {theme === 'christmas' ? (
+             <div className="relative">
+                 <Snowflake className={`w-20 h-20 relative z-10 animate-spin-slow ${t.splashIconColor}`} strokeWidth={1} />
+                 <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-yellow-300 animate-pulse" />
+             </div>
+           ) : theme === 'cosmos' ? (
              <Moon className={`w-16 h-16 relative z-10 animate-float ${t.splashIconColor}`} />
            ) : theme === 'coquette' ? (
              <Heart className={`w-16 h-16 relative z-10 animate-float fill-current ${t.splashIconColor}`} />
@@ -179,14 +265,21 @@ const StartScreen = ({ onStart, theme }: { onStart: () => void, theme: AppInterf
     <div className="flex flex-col items-center justify-center h-full animate-fade-in z-20">
       <div className="mb-10 relative group">
          <div className={`absolute inset-0 blur-2xl opacity-40 rounded-full w-40 h-40 animate-pulse transition-opacity duration-1000 ${t.splashPulse}`}></div>
-         <Sparkles className={`w-16 h-16 relative z-10 animate-float ${t.text}`} />
+         {theme === 'christmas' ? (
+            <div className="relative">
+                 <Gift className="w-20 h-20 text-[#8f1d24] fill-[#50080c] animate-float drop-shadow-2xl" />
+                 <Sparkles className="absolute -top-4 -right-4 w-10 h-10 text-[#d4af37] animate-pulse" />
+            </div>
+         ) : (
+            <Sparkles className={`w-16 h-16 relative z-10 animate-float ${t.text}`} />
+         )}
       </div>
       
       <h1 className={`text-4xl md:text-5xl text-center mb-3 tracking-wide drop-shadow-sm ${t.header}`}>
         Notas del Alma
       </h1>
       <p className={`font-sans text-[10px] uppercase tracking-[0.3em] mb-12 text-center max-w-[200px] leading-relaxed ${t.secondaryText}`}>
-        Tu dosis diaria de paz mental
+        {theme === 'christmas' ? 'Edición Navidad Real' : 'Tu dosis diaria de paz mental'}
       </p>
 
       <button 
@@ -194,7 +287,7 @@ const StartScreen = ({ onStart, theme }: { onStart: () => void, theme: AppInterf
         className={`group relative px-8 py-5 rounded-full font-sans text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl hover:shadow-2xl overflow-hidden ${t.buttonPrimary}`}
       >
         <span className="relative z-10 flex items-center gap-3">
-          Revelar Mensaje <Sparkles className="w-3 h-3 animate-pulse" />
+          {theme === 'christmas' ? 'Revelar Regalo' : 'Revelar Mensaje'} <Sparkles className="w-3 h-3 animate-pulse" />
         </span>
         <div className="absolute inset-0 rounded-full bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
       </button>
@@ -208,6 +301,7 @@ const App: React.FC = () => {
   const [savedNotes, setSavedNotes] = useState<Note[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGiftRevealing, setIsGiftRevealing] = useState(false); // NEW STATE FOR GIFT
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [screenshotMode, setScreenshotMode] = useState(false);
   
@@ -220,6 +314,11 @@ const App: React.FC = () => {
   const [appBackground, setAppBackground] = useState<AppBackground>('auto');
   const [interfaceTheme, setInterfaceTheme] = useState<AppInterfaceTheme>('essence');
   
+  // Rewards System State
+  const [rewardLevel, setRewardLevel] = useState(0);
+  const [nextClaimTime, setNextClaimTime] = useState(0);
+  const [isRewardsOpen, setIsRewardsOpen] = useState(false);
+  
   // Modals
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -228,7 +327,7 @@ const App: React.FC = () => {
   const [isModeSelectorOpen, setIsModeSelectorOpen] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
-  const [isSocialStudioOpen, setIsSocialStudioOpen] = useState(false); // NEW STATE
+  const [isSocialStudioOpen, setIsSocialStudioOpen] = useState(false); 
 
   // Usage Limit State
   const [aiUsageCount, setAiUsageCount] = useState(0);
@@ -248,14 +347,14 @@ const App: React.FC = () => {
     const checkVersion = () => {
       const storedVersion = localStorage.getItem('app_version');
       if (storedVersion !== APP_VERSION) {
-        // Clear all data to force clean slate for new update
+        // Clear all data
         localStorage.clear();
         localStorage.setItem('app_version', APP_VERSION);
         
-        // Show the requested message
-        alert("Esto es un restablecimiento forzoso para aplicar cambios de la actualización nueva que ha llegado.\n\nATT: SAM");
+        // Show Christmas update message
+        alert("🎁 ¡Sorpresa Navideña de SAM! 🎁\n\nHe actualizado todo para que vivas una Navidad de Realeza. Tu experiencia ha sido reiniciada para darte la bienvenida al Palacio de Invierno.");
         
-        // Reload page to apply clean state logic
+        // Reload page
         window.location.reload();
       }
     };
@@ -294,6 +393,12 @@ const App: React.FC = () => {
       const savedMood = localStorage.getItem('user_mood') as Mood | null;
       const savedMode = localStorage.getItem('user_mode') as AppMode | null;
       const savedTheme = localStorage.getItem('interface_theme') as AppInterfaceTheme | null;
+
+      // Rewards
+      const savedRewardLevel = parseInt(localStorage.getItem('reward_level') || '0');
+      const savedNextClaim = parseInt(localStorage.getItem('next_claim_time') || '0');
+      setRewardLevel(savedRewardLevel);
+      setNextClaimTime(savedNextClaim);
 
       if (savedMood) setCurrentMood(savedMood);
       if (savedMode) setCurrentMode(savedMode);
@@ -339,6 +444,19 @@ const App: React.FC = () => {
     localStorage.setItem('saved_notes', JSON.stringify(savedNotes));
   }, [savedNotes]);
 
+  // Calculate Dynamic AI Limit
+  const calculateMaxAiUses = () => {
+     // Start with 10
+     let bonus = 0;
+     if (rewardLevel >= 1) bonus += 3;  // Total 13
+     if (rewardLevel >= 3) bonus += 7;  // Total 20
+     if (rewardLevel >= 5) bonus += 10; // Total 30
+     if (rewardLevel >= 7) bonus += 20; // Total 50
+     return BASE_AI_USES + bonus;
+  };
+
+  const currentMaxUses = calculateMaxAiUses();
+
   const incrementAiUsage = () => {
     const today = new Date().toDateString();
     setAiUsageCount(prev => {
@@ -350,7 +468,7 @@ const App: React.FC = () => {
   };
 
   const checkAiLimit = (): boolean => {
-    if (aiUsageCount >= MAX_AI_USES) {
+    if (aiUsageCount >= currentMaxUses) {
       setShowLimitModal(true);
       return false;
     }
@@ -361,23 +479,16 @@ const App: React.FC = () => {
   const handleOnboardingComplete = async (selectedGender: Gender, name: string) => {
     localStorage.setItem('user_gender', selectedGender);
     localStorage.setItem('user_username', name);
+    // Set default theme to Christmas for new users during this season
+    localStorage.setItem('interface_theme', 'christmas');
+    setInterfaceTheme('christmas');
+
     setGender(selectedGender);
     setUsername(name);
     setShowOnboarding(false);
     
-    // Initial generation (if needed)
-    if (!checkAiLimit()) return; 
-
-    setIsLoading(true);
-    const note = await generateDailyNote(selectedGender, currentMood, currentMode);
-    // Apply flag if exists
-    const noteWithFlag = { ...note, userFlag: (name.toLowerCase() === 'carolina' ? userFlag : 'none') };
-    setCurrentNote(noteWithFlag);
-
-    if (note.isGeneratedByAI) {
-      incrementAiUsage();
-    }
-    setIsLoading(false);
+    // Initial generation
+    handleGenerateNew(selectedGender, 'festive', 'christmas');
   };
 
   const handleBackgroundChange = (bg: AppBackground) => {
@@ -406,34 +517,42 @@ const App: React.FC = () => {
     setShowMoodSelector(false);
     
     if (!gender) return;
-    if (!checkAiLimit()) return;
-
-    setIsLoading(true);
-    const note = await generateDailyNote(gender, mood, currentMode);
-    setCurrentNote({ ...note, userFlag: isVIP ? userFlag : 'none' });
-    if (note.isGeneratedByAI) {
-      incrementAiUsage();
-    }
-    setIsLoading(false);
+    
+    // If mood is festive, force christmas mode momentarily for better results
+    const modeToUse = mood === 'festive' ? 'christmas' : currentMode;
+    handleGenerateNew(gender, mood, modeToUse);
   };
 
   const handleModeSelect = async (mode: AppMode) => {
     setCurrentMode(mode);
     localStorage.setItem('user_mode', mode);
     
-    if (gender && aiUsageCount < MAX_AI_USES) {
-        setIsLoading(true);
-        const note = await generateDailyNote(gender, currentMood, mode);
-        setCurrentNote({ ...note, userFlag: isVIP ? userFlag : 'none' });
-        if (note.isGeneratedByAI) {
-            incrementAiUsage();
-        }
-        setIsLoading(false);
+    if (gender) {
+        handleGenerateNew(gender, currentMood, mode);
     }
   };
 
-  const handleGenerateNew = async () => {
-    if (!gender) {
+  // Reward Claim Handler
+  const handleClaimReward = (newLevel: number) => {
+     setRewardLevel(newLevel);
+     localStorage.setItem('reward_level', newLevel.toString());
+     
+     // Set next claim time (1 hour from now)
+     const nextTime = Date.now() + 3600000;
+     setNextClaimTime(nextTime);
+     localStorage.setItem('next_claim_time', nextTime.toString());
+  };
+
+  const handleGenerateNew = async (
+    forcedGender?: Gender, 
+    forcedMood?: Mood, 
+    forcedMode?: AppMode
+  ) => {
+    const g = forcedGender || gender;
+    const m = forcedMood || currentMood;
+    const mo = forcedMode || currentMode;
+
+    if (!g) {
       setShowOnboarding(true); 
       return;
     }
@@ -441,16 +560,34 @@ const App: React.FC = () => {
     if (!checkAiLimit()) return;
 
     setIsLoading(true);
-    const note = await generateDailyNote(gender, currentMood, currentMode);
-    setCurrentNote({ ...note, userFlag: isVIP ? userFlag : 'none' });
+    // If Christmas mode, prepare Gift Reveal
+    if (mo === 'christmas') {
+        setIsGiftRevealing(true);
+    }
+    
+    const note = await generateDailyNote(g, m, mo);
+    const noteWithFlag = { ...note, userFlag: isVIP ? userFlag : 'none' };
+    
+    setCurrentNote(noteWithFlag);
     if (note.isGeneratedByAI) {
       incrementAiUsage();
     }
-    setIsLoading(false);
+    
+    // If NOT christmas mode, stop loading immediately. 
+    // If IS christmas mode, 'isLoading' stays true until GiftReveal component calls onOpen
+    if (mo !== 'christmas') {
+        setIsLoading(false);
+    }
+  };
+
+  const handleGiftOpen = () => {
+      setIsGiftRevealing(false);
+      setIsLoading(false);
   };
 
   const handleGetFallbackNote = () => {
-    const note = getRandomFallbackNote();
+    // Pass the reward level to unlock extended collection
+    const note = getRandomFallbackNote(rewardLevel);
     setCurrentNote({ ...note, userFlag: isVIP ? userFlag : 'none' });
   };
 
@@ -483,7 +620,7 @@ const App: React.FC = () => {
 
   const handleCycleStyle = () => {
     if (!currentNote) return;
-    const styles: NoteStyle[] = ['classic', 'midnight', 'aura', 'minimal', 'botanical', 'cinema', 'vintage', 'rose'];
+    const styles: NoteStyle[] = ['christmas', 'classic', 'midnight', 'aura', 'minimal', 'botanical', 'cinema', 'vintage', 'rose'];
     const currentIndex = styles.indexOf(currentNote.style || 'classic');
     const nextIndex = (currentIndex + 1) % styles.length;
     
@@ -556,6 +693,7 @@ const App: React.FC = () => {
        case 'botanical': return '#e8ede8';
        case 'vintage': return '#ebe6da';
        case 'rose': return '#fff0f5';
+       case 'christmas': return '#2a0a0d';
        default: return '#F0EFEB';
      }
   };
@@ -565,6 +703,14 @@ const App: React.FC = () => {
       className={`min-h-screen w-full relative flex flex-col items-center justify-center transition-colors duration-700 ease-in-out ${screenshotMode ? 'cursor-zoom-out' : ''} ${activeTheme.bg}`}
       onClick={() => setScreenshotMode(false)}
     >
+      {/* CHRISTMAS DECORATIONS */}
+      {interfaceTheme === 'christmas' && (
+        <>
+            <Snowfall />
+            <ChristmasLights />
+        </>
+      )}
+
       {/* SPLASH SCREEN */}
       {isSplashVisible && <SplashScreen theme={interfaceTheme} />}
       
@@ -598,6 +744,14 @@ const App: React.FC = () => {
         current={userFlag}
       />
 
+      <RewardsPass 
+        isOpen={isRewardsOpen}
+        onClose={() => setIsRewardsOpen(false)}
+        currentLevel={rewardLevel}
+        nextClaimTime={nextClaimTime}
+        onClaimReward={handleClaimReward}
+      />
+
       {currentNote && (
           <SocialMediaStudio 
             isOpen={isSocialStudioOpen}
@@ -626,7 +780,7 @@ const App: React.FC = () => {
             height: '1920px',
             zIndex: -1,
             backgroundColor: getAutoBackgroundColor(currentNote.style), 
-            backgroundImage: (!['midnight', 'cinema'].includes(currentNote.style))
+            backgroundImage: (!['midnight', 'cinema', 'christmas'].includes(currentNote.style))
               ? `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`
               : 'none',
             display: 'flex',
@@ -641,10 +795,10 @@ const App: React.FC = () => {
           </div>
           
           <div className="absolute bottom-40 text-center opacity-70">
-            <p className={`font-serif text-4xl italic tracking-wider ${['midnight', 'cinema'].includes(currentNote.style) ? 'text-white' : 'text-stone-800'}`}>
+            <p className={`font-serif text-4xl italic tracking-wider ${['midnight', 'cinema', 'christmas'].includes(currentNote.style) ? 'text-white' : 'text-stone-800'}`}>
               Notas del Alma
             </p>
-            <p className={`font-sans text-xl uppercase tracking-[0.3em] mt-4 ${['midnight', 'cinema'].includes(currentNote.style) ? 'text-stone-500' : 'text-stone-400'}`}>
+            <p className={`font-sans text-xl uppercase tracking-[0.3em] mt-4 ${['midnight', 'cinema', 'christmas'].includes(currentNote.style) ? 'text-stone-500' : 'text-stone-400'}`}>
               @notasdelalma
             </p>
           </div>
@@ -664,7 +818,7 @@ const App: React.FC = () => {
            <span className={`text-lg ${activeTheme.header} transition-colors duration-500`}>Notas del Alma</span>
            {isVIP && <Crown className="w-4 h-4 text-amber-400 animate-pulse" title="VIP" />}
            <span className={`ml-2 text-[10px] font-sans opacity-50 px-2 py-0.5 rounded-full ${activeTheme.text} border border-current`}>
-             {aiUsageCount}/{MAX_AI_USES}
+             {aiUsageCount}/{currentMaxUses}
            </span>
         </div>
         <button 
@@ -678,12 +832,18 @@ const App: React.FC = () => {
       {/* Main Content */}
       <main className={`w-full max-w-xl px-4 z-10 transition-all duration-500 flex flex-col justify-center items-center ${screenshotMode ? 'scale-105' : 'scale-100'} flex-grow`}>
         {isLoading ? (
-          <BreathingLoader theme={interfaceTheme} />
+          // IF CHRISTMAS MODE AND GIFT IS READY
+          isGiftRevealing ? (
+            <GiftReveal onOpen={handleGiftOpen} />
+          ) : (
+            // STANDARD LOADER
+            <BreathingLoader theme={interfaceTheme} />
+          )
         ) : (
           currentNote ? (
             <NoteCard note={currentNote} viewMode={screenshotMode || isGeneratingImage} />
           ) : (
-            !showOnboarding && <StartScreen onStart={handleGenerateNew} theme={interfaceTheme} />
+            !showOnboarding && <StartScreen onStart={() => handleGenerateNew()} theme={interfaceTheme} />
           )
         )}
       </main>
@@ -707,7 +867,7 @@ const App: React.FC = () => {
       )}
 
       {/* Controls */}
-      {currentNote && (
+      {currentNote && !isLoading && (
         <div className={`fixed bottom-6 md:bottom-10 w-full px-4 flex justify-center items-center gap-3 md:gap-6 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-y-20 pointer-events-none' : 'opacity-100'}`}>
           
           <button 
@@ -728,7 +888,7 @@ const App: React.FC = () => {
 
           <button 
             onClick={(e) => { e.stopPropagation(); handleGenerateNew(); }}
-            className={`group p-5 shadow-2xl rounded-full transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl active:scale-90 flex items-center justify-center ring-2 ring-white/20 ${activeTheme.buttonPrimary} ${aiUsageCount >= MAX_AI_USES ? 'opacity-50 grayscale' : ''}`}
+            className={`group p-5 shadow-2xl rounded-full transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl active:scale-90 flex items-center justify-center ring-2 ring-white/20 ${activeTheme.buttonPrimary} ${aiUsageCount >= currentMaxUses ? 'opacity-50 grayscale' : ''}`}
             title="Nueva Nota"
           >
             <Sparkles className="w-7 h-7" />
@@ -754,10 +914,23 @@ const App: React.FC = () => {
       )}
 
       {/* Secondary Tools */}
-      {currentNote && (
+      {currentNote && !isLoading && (
         <div className={`fixed right-4 md:right-8 bottom-32 md:bottom-36 flex flex-col gap-3 z-30 transition-all duration-500 ${screenshotMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100'}`}>
           
-          {/* NEW SOCIAL STUDIO BUTTON */}
+          {/* Rewards Button */}
+          <button 
+              onClick={(e) => { e.stopPropagation(); setIsRewardsOpen(true); }}
+              className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${activeTheme.buttonSecondary} border-[#d4af37] text-[#d4af37] group`}
+              title="Pase de Recompensas"
+          >
+              <Ticket className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+              {/* Notification Dot if rewards available (simplified logic) */}
+              {rewardLevel < 7 && Date.now() >= nextClaimTime && (
+                <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full animate-pulse border-2 border-white"></span>
+              )}
+          </button>
+
+          {/* SOCIAL STUDIO BUTTON */}
           <button 
               onClick={(e) => { e.stopPropagation(); setIsSocialStudioOpen(true); }}
               className={`p-3 backdrop-blur shadow-sm rounded-full transition-all duration-300 active:scale-90 ${activeTheme.buttonSecondary} border-indigo-200 text-indigo-500 group`}

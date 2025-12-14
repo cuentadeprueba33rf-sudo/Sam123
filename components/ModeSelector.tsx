@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Crown, AlertTriangle, Zap, Sparkles, X, Check } from 'lucide-react';
+import { Crown, AlertTriangle, Zap, Sparkles, X, Check, Snowflake } from 'lucide-react';
 import { AppMode } from '../types';
 
 interface ModeSelectorProps {
@@ -13,6 +13,13 @@ const ModeSelector: React.FC<ModeSelectorProps> = ({ currentMode, onSelect, onCl
   const [selectedMode, setSelectedMode] = useState<AppMode>(currentMode);
   
   const modes: { id: AppMode; label: string; desc: string; icon: React.ElementType; style: string }[] = [
+    { 
+      id: 'christmas', 
+      label: 'Navidad Mágica', 
+      desc: 'Esperanza, regalos del alma y nuevos comienzos.', 
+      icon: Snowflake, 
+      style: 'bg-[#0f2c22] border-[#C5A065] text-[#C5A065] hover:bg-[#1a382e]' 
+    },
     { 
       id: 'neutral', 
       label: 'Neutro / Paz', 
@@ -79,7 +86,7 @@ const ModeSelector: React.FC<ModeSelectorProps> = ({ currentMode, onSelect, onCl
               onClick={() => setSelectedMode(mode.id)}
               className={`relative flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-300 active:scale-95 group text-left ${mode.style} ${selectedMode === mode.id ? 'ring-2 ring-offset-2 ring-ink scale-[1.02] shadow-md' : 'opacity-80 hover:opacity-100'}`}
             >
-              <div className="p-2 bg-white/50 rounded-full shrink-0">
+              <div className={`p-2 rounded-full shrink-0 ${mode.id === 'christmas' ? 'bg-[#C5A065]/20' : 'bg-white/50'}`}>
                 <mode.icon className="w-5 h-5" />
               </div>
               <div>
